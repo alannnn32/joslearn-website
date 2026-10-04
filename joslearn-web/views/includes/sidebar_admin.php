@@ -1,0 +1,3 @@
+<?php
+// Sidebar menu Admin.
+?>
