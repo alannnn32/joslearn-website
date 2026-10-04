@@ -3,9 +3,7 @@ session_start();
 
 $error_message = '';$success_message = '';
 
-// Memproses data saat form dikirimkan (Method POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Mengambil dan membersihkan input data
     $username = isset($_POST['username']) ? trim($_POST['username']) : '';$password = isset($_POST['password']) ? trim($_POST['password']) : '';
     $remember = isset($_POST['remember']) ? true : false;
 
@@ -18,7 +16,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 setcookie('user_login', $username, time() + (86400 * 30), "/");
             }
 
-            // ke halaman dashboard
             header('Location: dashboard.php');
             exit();
         } else {
@@ -33,7 +30,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JOSLEARN - Masuk</title>
-    <!-- Import Google Font Inter & Lucide Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -54,7 +50,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #333333;
         }
 
-        /* --- SISI KIRI --- */
         .sidebar {
             width: 40%;
             background: linear-gradient(180deg, #1e6bf2 0%, #0d47a1 100%);
@@ -149,7 +144,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             opacity: 0.6;
         }
 
-        /* --- SISI KANAN --- */
         .main-container {
             width: 60%;
             display: flex;
@@ -357,7 +351,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 
-    <!-- Sisi Kiri (Gradient & Informasi) -->
     <div class="sidebar">
         <div class="sidebar-brand">
             <div class="logo-icon">
@@ -394,7 +387,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 
-    <!-- Sisi Kanan (Form Login) -->
     <div class="main-container">
         <div></div>
 
