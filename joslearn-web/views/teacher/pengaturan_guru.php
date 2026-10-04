@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Data dummy untuk Pengaturan Sistem
 $settings = [
     'sekolah' => [
         'nama_resmi' => 'SMA Negeri 1 Rejoso Nganjuk',
@@ -52,7 +51,6 @@ $settings = [
             min-height: 100vh;
         }
 
-        /* Sidebar Styles */
         .sidebar {
             width: 250px;
             background-color: #ffffff;
@@ -163,7 +161,6 @@ $settings = [
             min-width: 0;
         }
 
-        /* Top Header */
         .top-header {
             background-color: #ffffff;
             height: 68px;
@@ -246,13 +243,11 @@ $settings = [
             color: #64748b;
         }
 
-        /* Content Area */
         .content-body {
             padding: 28px 32px;
             flex: 1;
         }
 
-        /* Main Hero Banner */
         .hero-banner {
             background-color: #ffffff;
             border: 1px solid #e2e8f0;
@@ -314,7 +309,6 @@ $settings = [
         .btn-light { background-color: #f1f5f9; color: #334155; }
         .btn-primary { background-color: #1d4ed8; color: #ffffff; }
 
-        /* Grid Cards Layout */
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -381,7 +375,6 @@ $settings = [
         .badge-role { background-color: #eff6ff; color: #2563eb; }
         .badge-sync { background-color: #dcfce7; color: #15803d; }
 
-        /* Form Details & Boxes */
         .info-group {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -450,7 +443,6 @@ $settings = [
             margin-bottom: 16px;
         }
 
-        /* User Roles List */
         .role-list {
             display: flex;
             flex-direction: column;
@@ -493,7 +485,6 @@ $settings = [
             color: #64748b;
         }
 
-        /* Database Stat Area */
         .db-stat-container {
             display: flex;
             align-items: baseline;
@@ -539,7 +530,6 @@ $settings = [
             margin-bottom: 20px;
         }
 
-        /* Bottom Section Banner */
         .bottom-banner {
             background-color: #ffffff;
             border: 1px solid #e2e8f0;
@@ -576,7 +566,6 @@ $settings = [
             color: #64748b;
         }
 
-        /* Footer Info */
         .footer-info {
             margin-top: 24px;
             display: flex;
@@ -602,7 +591,6 @@ $settings = [
 </head>
 <body>
 
-    <!-- Sidebar Navigation -->
     <aside class="sidebar">
         <div>
             <div class="brand">
@@ -635,10 +623,8 @@ $settings = [
         </a>
     </aside>
 
-    <!-- Main Wrapper -->
     <div class="main-wrapper">
-        
-        <!-- Header -->
+
         <header class="top-header">
             <div class="search-bar">
                 <i data-lucide="search" style="width:14px;"></i>
@@ -665,10 +651,8 @@ $settings = [
             </div>
         </header>
 
-        <!-- Body Content -->
         <main class="content-body">
-            
-            <!-- Hero Banner -->
+
             <div class="hero-banner">
                 <div>
                     <div class="hero-tags">
@@ -688,10 +672,8 @@ $settings = [
                 </div>
             </div>
 
-            <!-- Cards Grid -->
             <div class="cards-grid">
-                
-                <!-- Card 1: Identitas Lembaga -->
+
                 <div class="card">
                     <div class="card-header">
                         <div class="card-header-left">
@@ -745,7 +727,6 @@ $settings = [
                     </button>
                 </div>
 
-                <!-- Card 2: Kalender Akademik -->
                 <div class="card">
                     <div class="card-header">
                         <div class="card-header-left">
@@ -784,7 +765,6 @@ $settings = [
                     </button>
                 </div>
 
-                <!-- Card 3: User Roles & Matrix -->
                 <div class="card">
                     <div class="card-header">
                         <div class="card-header-left">
@@ -839,7 +819,6 @@ $settings = [
                     </button>
                 </div>
 
-                <!-- Card 4: Database Cluster -->
                 <div class="card">
                     <div class="card-header">
                         <div class="card-header-left">
@@ -894,7 +873,6 @@ $settings = [
 
             </div>
 
-            <!-- Bottom Integrated Eco-System Banner -->
             <div class="bottom-banner">
                 <img src="https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=400" class="bottom-banner-img" alt="School">
                 <div>
@@ -906,7 +884,6 @@ $settings = [
                 </div>
             </div>
 
-            <!-- Footer Info -->
             <footer class="footer-info">
                 <div><i data-lucide="server" style="width:12px; display:inline;"></i> JosLearn Cloud Engine v4.2.8 • Terintegrasi dengan Server Dapodik Kemendikbudristek RI</div>
                 <div>Zona Waktu: Asia/Jakarta (WIB) • Latency: 18ms</div>
