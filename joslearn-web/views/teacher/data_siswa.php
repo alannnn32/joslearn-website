@@ -599,7 +599,7 @@ $total_siswa = count($data_siswa);
                 <div class="menu-category">Menu Utama</div>
                 <ul class="menu-list">
                     <li class="menu-item">
-                        <a href="#"><i data-lucide="layout-dashboard" style="width: 16px;"></i> Dashboard</a>
+                        <a href="../admin/dashboard.php"><i data-lucide="layout-dashboard" style="width: 16px;"></i> Dashboard</a>
                     </li>
                 </ul>
             </div>
@@ -709,7 +709,7 @@ $total_siswa = count($data_siswa);
                 </div>
                 <div class="action-buttons">
                     <button class="btn btn-outline">Import Excel</button>
-                    <a href="tambah_siswa.php" class="btn btn-primary">
+                    <a href="../students/tambah_siswa.php" class="btn btn-primary">
                         <i data-lucide="plus" style="width: 16px;"></i> Tambah Siswa
                     </a>
                 </div>
@@ -760,7 +760,7 @@ $total_siswa = count($data_siswa);
                                 <td><span class="badge-kelas"><?php echo htmlspecialchars($row['kelas']); ?></span></td>
                                 <td>
                                     <div class="action-icons">
-                                        <a href="detail_profil_siswa.php?edit=<?php echo $row['no']; ?>" class="action-btn" title="Edit">
+                                        <a href="../students/detail_profil_siswa.php?edit=<?php echo $row['no']; ?>" class="action-btn" title="Edit">
                                             <i data-lucide="square-pen" style="width: 16px;"></i>
                                         </a>
                                         <a href="#" class="action-btn delete" title="Hapus" onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
