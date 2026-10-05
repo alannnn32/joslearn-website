@@ -1,497 +1,700 @@
-```php
 <?php
-$baseUrl = '/joslearn-website/joslearn-web';
-$logoPath = $baseUrl . '/assets/img/logo.png';
+/**
+ * views/teacher/dashboard.php
+ * Dashboard Portal Guru JosLearn
+ * UI statis sementara, belum menggunakan database.
+ */
 
-$classes = [
-    [
-        'number' => '10',
-        'name' => 'X MIPA 1',
-        'subject' => 'Biologi Peminatan',
-        'total' => 32,
-        'status' => 'Sedang Berlangsung',
-        'status_class' => 'ongoing',
-        'attendance' => [
-            ['count' => 27, 'label' => 'Hadir'],
-            ['count' => 2, 'label' => 'Izin'],
-            ['count' => 3, 'label' => 'Belum']
-        ]
-    ],
-    [
-        'number' => '10',
-        'name' => 'X MIPA 2',
-        'subject' => 'Kimia Dasar',
-        'total' => 34,
-        'status' => 'Selesai',
-        'status_class' => 'done',
-        'attendance' => [
-            ['count' => 30, 'label' => 'Hadir'],
-            ['count' => 3, 'label' => 'Sakit'],
-            ['count' => 1, 'label' => 'Alpa']
-        ]
-    ],
-    [
-        'number' => '11',
-        'name' => 'XI IPS 1',
-        'subject' => 'Sosiologi',
-        'total' => 32,
-        'status' => 'Selesai',
-        'status_class' => 'done',
-        'attendance' => [
-            ['count' => 27, 'label' => 'Hadir'],
-            ['count' => 5, 'label' => 'Izin'],
-            ['count' => 0, 'label' => 'Alpa']
-        ]
-    ]
-];
+$pageTitle = 'Dashboard Guru';
+$activeMenu = 'dashboard';
 
-$grades = [
-    [
-        'class' => 'X MIPA 1',
-        'subject' => 'Biologi & Kimia',
-        'percent' => 85,
-        'filled' => '32 dari 38 siswa terisi lengkap',
-        'note' => 'Nilai TP 1 - TP 2 Selesai',
-        'color' => 'blue'
-    ],
-    [
-        'class' => 'X MIPA 2',
-        'subject' => 'Kimia',
-        'percent' => 72,
-        'filled' => '25 dari 34 siswa terisi lengkap',
-        'note' => 'Tersisa 9 Siswa',
-        'color' => 'teal'
-    ],
-    [
-        'class' => 'XI IPS 1',
-        'subject' => 'Sosiologi & Geografi',
-        'percent' => 90,
-        'filled' => '29 dari 32 siswa terisi lengkap',
-        'note' => 'Hampir Lengkap',
-        'color' => 'dark'
-    ]
-];
-
-$activities = [
-    [
-        'icon' => '✓',
-        'type' => 'check',
-        'title' => 'Absensi X MIPA 1 berhasil dibuat',
-        'description' => 'Hari ini, 07:00 WIB · Sesi pagi dibuka via portal'
-    ],
-    [
-        'icon' => '✎',
-        'type' => 'pencil',
-        'title' => 'Nilai X MIPA 2 diperbarui',
-        'description' => 'Kemarin, 14:20 WIB · Input nilai TP 2 (34 siswa)'
-    ],
-    [
-        'icon' => '✓',
-        'type' => 'check',
-        'title' => 'Absensi XI IPS 1 selesai',
-        'description' => 'Kemarin, 08:00 WIB · Rekapitulasi absensi selesai'
-    ],
-    [
-        'icon' => '⌖',
-        'type' => 'pin',
-        'title' => 'Verifikasi presensi geofence aktif',
-        'description' => '22 Sep 2026 · Radius gerbang SMAN 1 Rejoso'
-    ]
-];
+require_once __DIR__ . '/../includes/header.php';
+require_once __DIR__ . '/../includes/sidebar_teacher.php';
 ?>
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#2563eb">
 
-    <title>Dashboard Guru | JosLearn</title>
+<style>
+/* CSS khusus konten dashboard, tidak mengubah sidebar kelompok */
+.jl-dashboard {
+    font-family: 'Inter', sans-serif;
+    color: #172b4d;
+}
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+.jl-dashboard .dash-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
 
-    <!-- Path CSS disesuaikan dengan alamat localhost -->
-    <link rel="stylesheet"
-          href="<?= $baseUrl ?>/assets/css/dashboard.css?v=2">
-</head>
-<body>
+.jl-dashboard .dash-heading h1 {
+    font-size: 25px;
+    font-weight: 800;
+    margin: 0 0 5px;
+}
 
-<div class="app-shell">
+.jl-dashboard .dash-heading p {
+    color: #718096;
+    font-size: 12px;
+    margin: 0;
+}
 
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <a href="#dashboard" class="brand">
-            <img
-                src="<?= htmlspecialchars($logoPath) ?>"
-                alt="Logo JosLearn"
-                class="brand-logo"
-                onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"
-            >
-            <span class="brand-fallback">J</span>
+.jl-dashboard .live-label {
+    background: #e8f7ef;
+    color: #168451;
+    padding: 5px 9px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+}
 
-            <span class="brand-copy">
-                <strong>JosLearn</strong>
-                <small>SMAN 1 Rejoso</small>
-            </span>
-        </a>
+.jl-dashboard .welcome-panel {
+    background: linear-gradient(115deg, #173caa, #2859d9);
+    color: white;
+    border-radius: 13px;
+    padding: 25px 27px;
+    margin-bottom: 18px;
+    box-shadow: 0 5px 14px rgba(35, 71, 184, .15);
+}
 
-        <div class="portal-label">
-            <span class="portal-dot"></span>
-            PORTAL GURU
-        </div>
+.jl-dashboard .welcome-panel .eyebrow {
+    display: inline-block;
+    background: rgba(255,255,255,.15);
+    border-radius: 20px;
+    padding: 5px 9px;
+    font-size: 9px;
+    margin-bottom: 12px;
+}
 
-        <nav class="side-nav">
-            <a href="#dashboard" class="nav-item active">
-                <span class="nav-icon">▦</span>
-                <span>Dashboard</span>
-            </a>
+.jl-dashboard .welcome-panel h2 {
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 7px;
+}
 
-            <a href="attendance_manage.php" class="nav-item">
-                <span class="nav-icon">◷</span>
-                <span>Absensi</span>
-            </a>
+.jl-dashboard .welcome-panel p {
+    font-size: 11px;
+    line-height: 1.7;
+    max-width: 650px;
+    margin-bottom: 14px;
+    color: #e5edff;
+}
 
-            <a href="report_class_select.php" class="nav-item">
-                <span class="nav-icon">▤</span>
-                <span>Rapor</span>
-            </a>
+.jl-dashboard .welcome-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
 
-            <a href="#profil" class="nav-item">
-                <span class="nav-icon">♙</span>
-                <span>Profil</span>
-            </a>
+.jl-dashboard .welcome-tags span {
+    font-size: 9px;
+    padding: 5px 9px;
+    background: rgba(255,255,255,.13);
+    border-radius: 20px;
+}
 
-            <a href="#pengaturan" class="nav-item">
-                <span class="nav-icon">⚙</span>
-                <span>Pengaturan</span>
-            </a>
-        </nav>
+.jl-dashboard .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+}
 
-        <a href="#keluar" class="logout-link">
-            <span>↪</span> Keluar Portal
-        </a>
-    </aside>
+.jl-dashboard .stat-card {
+    background: #fff;
+    border: 1px solid #edf0f7;
+    border-radius: 12px;
+    padding: 16px;
+    min-width: 0;
+}
 
-    <!-- AREA DASHBOARD -->
-    <main class="main-area" id="dashboard">
+.jl-dashboard .stat-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
 
-        <!-- HEADER -->
-        <header class="topbar">
-            <div class="school-title">
-                <strong>SMA NEGERI 1 REJOSO NGANJUK</strong>
-                <span>T.A. 2026/2027 · SEMESTER GANJIL</span>
-            </div>
+.jl-dashboard .stat-label {
+    font-size: 9px;
+    color: #78859b;
+    font-weight: 700;
+}
 
-            <label class="search-box">
-                <span class="search-icon">⌕</span>
-                <input
-                    type="search"
-                    id="dashboardSearch"
-                    placeholder="Cari data siswa, presensi, rapor..."
-                    autocomplete="off"
-                >
-            </label>
+.jl-dashboard .stat-icon {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: #e8efff;
+    color: #2859d9;
+    font-size: 16px;
+    flex-shrink: 0;
+}
 
-            <div class="cloud-status">
-                <span class="status-dot"></span>
-                <span>
-                    <b>Terhubung</b>
-                    <small>Cloud</small>
-                </span>
-            </div>
+.jl-dashboard .stat-value {
+    font-size: 25px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 7px;
+}
 
-            <button
-                class="notification"
-                type="button"
-                aria-label="Notifikasi"
-                title="Notifikasi"
-            >
-                ♟<i></i>
-            </button>
+.jl-dashboard .stat-note {
+    font-size: 9px;
+    color: #7a879b;
+}
 
-            <div class="profile-mini">
-                <span class="avatar">BP</span>
-                <span class="profile-text">
-                    <strong>Pak Budi Prasetyo, S.Pd</strong>
-                    <small>Guru SMAN 1 Rejoso</small>
-                </span>
-                <span class="profile-caret">⌄</span>
-            </div>
-        </header>
+.jl-dashboard .dashboard-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(270px, .85fr);
+    gap: 16px;
+    align-items: start;
+}
 
-        <!-- SAPAAN -->
-        <section class="welcome-row">
-            <div class="welcome-copy">
-                <div class="title-line">
-                    <h1>Dashboard</h1>
-                    <span class="live-pill">
-                        <i></i> Live Data
-                    </span>
-                </div>
+.jl-dashboard .dash-card {
+    background: #fff;
+    border: 1px solid #edf0f7;
+    border-radius: 12px;
+    padding: 17px;
+    margin-bottom: 16px;
+    min-width: 0;
+}
 
-                <p>
-                    Selamat datang kembali, Bapak/Ibu Guru di Portal Akademik SMAN 1 Rejoso
-                </p>
-            </div>
+.jl-dashboard .card-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
 
-            <div class="semester-pill">
-                <span>▣</span>
-                T.A. 2026/2027 · Semester Ganjil
-            </div>
-        </section>
+.jl-dashboard .card-heading h3 {
+    font-size: 13px;
+    font-weight: 800;
+    margin: 0 0 4px;
+}
 
-        <!-- KARTU STATISTIK -->
-        <section class="stats-grid">
+.jl-dashboard .card-heading p {
+    color: #8792a5;
+    font-size: 9px;
+    margin: 0;
+}
 
-            <article class="stat-card">
-                <div class="stat-label">KELAS DIAMPU</div>
-                <div class="stat-content">
-                    <strong>4 <small>Kelas</small></strong>
-                    <span class="stat-icon violet">▣</span>
-                </div>
-                <p><span class="mini-tag">Aktif</span> Kelas aktif semester ini</p>
-            </article>
+.jl-dashboard .small-pill {
+    background: #edf2ff;
+    color: #315cc7;
+    border-radius: 20px;
+    padding: 5px 8px;
+    font-size: 9px;
+    white-space: nowrap;
+}
 
-            <article class="stat-card">
-                <div class="stat-label">JUMLAH SISWA</div>
-                <div class="stat-content">
-                    <strong>129 <small>Siswa</small></strong>
-                    <span class="stat-icon teal">☷</span>
-                </div>
-                <p>Total siswa bimbingan SMAN 1</p>
-            </article>
+.jl-dashboard .schedule-row {
+    display: grid;
+    grid-template-columns: 68px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f2f7;
+}
 
-            <article class="stat-card">
-                <div class="stat-label">ABSENSI HARI INI</div>
-                <div class="stat-content">
-                    <strong>3 <small>Aktif</small></strong>
-                    <span class="stat-icon blue">✓</span>
-                </div>
-                <p><span class="blue-dot"></span> Dari 4 sesi jadwal tatap muka</p>
-            </article>
+.jl-dashboard .schedule-row:last-child {
+    border-bottom: 0;
+}
 
-            <article class="stat-card">
-                <div class="stat-label">NILAI RAPOR</div>
-                <div class="stat-content">
-                    <strong class="percent">85% <small>Terisi</small></strong>
-                    <span class="stat-icon lavender">▤</span>
-                </div>
-                <p><b class="small-blue">322</b> dari 376 kompetensi terpenuhi</p>
-            </article>
+.jl-dashboard .schedule-time {
+    background: #eef3ff;
+    color: #2859d9;
+    padding: 9px 5px;
+    border-radius: 7px;
+    font-size: 9px;
+    font-weight: 800;
+    text-align: center;
+}
 
-        </section>
+.jl-dashboard .schedule-time.current {
+    background: #2156d8;
+    color: #fff;
+}
 
-        <!-- KOLOM DASHBOARD -->
-        <div class="dashboard-columns">
+.jl-dashboard .schedule-info strong {
+    display: block;
+    font-size: 10px;
+    margin-bottom: 4px;
+}
 
-            <!-- KOLOM KIRI -->
-            <div class="left-column">
+.jl-dashboard .schedule-info span {
+    color: #7b879b;
+    font-size: 9px;
+    line-height: 1.5;
+}
 
-                <!-- ABSENSI -->
-                <section class="panel">
-                    <div class="panel-heading">
-                        <div>
-                            <h2>
-                                <span class="heading-dot"></span>
-                                Absensi Hari Ini
-                            </h2>
-                            <p>
-                                Pantau absensi siswa dari kelas yang Anda ampu secara real-time.
-                            </p>
-                        </div>
+.jl-dashboard .status-pill {
+    border-radius: 20px;
+    padding: 5px 7px;
+    font-size: 8px;
+    font-weight: 700;
+    white-space: nowrap;
+}
 
-                        <span class="geofence-tag">
-                            ⌖ Rejoso Campus<br>Geofence
-                        </span>
-                    </div>
+.jl-dashboard .status-done {
+    color: #168451;
+    background: #e7f8ef;
+}
 
-                    <div class="class-list">
-                        <?php foreach ($classes as $index => $class): ?>
-                            <article class="class-row searchable-row">
-                                <span class="class-number class-number-<?= $index ?>">
-                                    <?= htmlspecialchars($class['number']) ?>
-                                </span>
+.jl-dashboard .status-live {
+    color: #2456cf;
+    background: #e9efff;
+}
 
-                                <div class="class-detail">
-                                    <strong>
-                                        <?= htmlspecialchars($class['name']) ?>
+.jl-dashboard .status-wait {
+    color: #8a6b16;
+    background: #fff5d7;
+}
 
-                                        <span class="state <?= htmlspecialchars($class['status_class']) ?>">
-                                            <?= htmlspecialchars($class['status']) ?>
-                                        </span>
-                                    </strong>
+.jl-dashboard .progress-item {
+    margin-bottom: 17px;
+}
 
-                                    <small>
-                                        <?= $class['total'] ?> Siswa Terdaftar
-                                        · <?= htmlspecialchars($class['subject']) ?>
-                                    </small>
-                                </div>
+.jl-dashboard .progress-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 10px;
+    margin-bottom: 7px;
+}
 
-                                <div class="attendance-counts">
-                                    <?php foreach ($class['attendance'] as $attendance): ?>
-                                        <span>
-                                            <b><?= $attendance['count'] ?></b>
-                                            <?= htmlspecialchars($attendance['label']) ?>
-                                        </span>
-                                    <?php endforeach; ?>
-                                </div>
-                            </article>
-                        <?php endforeach; ?>
-                    </div>
+.jl-dashboard .progress-title strong {
+    font-weight: 700;
+}
 
-                    <div class="panel-footer">
-                        <small>
-                            Data contoh dashboard SMAN 1 Rejoso
-                        </small>
+.jl-dashboard .progress-title span {
+    color: #2859d9;
+    font-weight: 800;
+}
 
-                        <a class="primary-button" href="attendance_manage.php">
-                            ♧ Kelola Absensi
-                        </a>
-                    </div>
-                </section>
+.jl-dashboard .progress {
+    height: 6px;
+    border-radius: 10px;
+    background: #e9edf5;
+    overflow: hidden;
+}
 
-                <!-- RAPOR -->
-                <section class="panel grades-panel">
-                    <div class="panel-heading">
-                        <div>
-                            <h2>
-                                <span class="heading-dot"></span>
-                                Nilai Rapor
-                            </h2>
-                            <p>
-                                Kelola dan pantau nilai rapor setiap capaian kompetensi siswa.
-                            </p>
-                        </div>
+.jl-dashboard .progress-bar {
+    border-radius: 10px;
+    background: #2860e8;
+}
 
-                        <span class="target-date">
-                            Target Input: 15 Okt 2026
-                        </span>
-                    </div>
+.jl-dashboard .progress-caption {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    color: #8591a5;
+    font-size: 8px;
+    margin-top: 6px;
+}
 
-                    <div class="grades-list">
-                        <?php foreach ($grades as $grade): ?>
-                            <article class="grade-item searchable-row">
-                                <div class="grade-title">
-                                    <strong>
-                                        <?= htmlspecialchars($grade['class']) ?>
-                                        <small>
-                                            (<?= htmlspecialchars($grade['subject']) ?>)
-                                        </small>
-                                    </strong>
+.jl-dashboard .quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 15px;
+}
 
-                                    <b><?= $grade['percent'] ?>%</b>
-                                </div>
+.jl-dashboard .quick-actions a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 9px 11px;
+    border-radius: 7px;
+    background: #214ab7;
+    color: #fff;
+}
 
-                                <div class="progress-track">
-                                    <span
-                                        class="progress-<?= htmlspecialchars($grade['color']) ?>"
-                                        style="width: <?= $grade['percent'] ?>%"
-                                    ></span>
-                                </div>
+.jl-dashboard .quick-actions a.secondary {
+    background: #edf2ff;
+    color: #214ab7;
+}
 
-                                <div class="grade-meta">
-                                    <span><?= htmlspecialchars($grade['filled']) ?></span>
-                                    <b><?= htmlspecialchars($grade['note']) ?></b>
-                                </div>
-                            </article>
-                        <?php endforeach; ?>
-                    </div>
+.jl-dashboard .activity-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+}
 
-                    <div class="grades-footer">
-                        <span>ⓘ Format Kurikulum Merdeka 2026/2027</span>
-                        <a class="soft-button" href="report_class_select.php">
-                            ♧ Input Nilai
-                        </a>
-                    </div>
-                </section>
+.jl-dashboard .activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #f5f7fc;
+    border-radius: 8px;
+    padding: 11px;
+    min-width: 0;
+}
 
-            </div>
+.jl-dashboard .activity-icon {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: #e1ebff;
+    color: #2859d9;
+    flex-shrink: 0;
+}
 
-            <!-- KOLOM KANAN -->
-            <div class="right-column">
+.jl-dashboard .activity-item strong {
+    display: block;
+    font-size: 9px;
+    margin-bottom: 4px;
+}
 
-                <!-- JADWAL -->
-                <section class="schedule-card">
-                    <div class="schedule-top">
-                        <span>▣ Jadwal Berikutnya</span>
-                        <time>09:45 - 11:15 WIB</time>
-                    </div>
+.jl-dashboard .activity-item p {
+    color: #7b879b;
+    font-size: 9px;
+    line-height: 1.5;
+    margin: 0;
+}
 
-                    <small>JAM KE-5 · SMAN 1 REJOSO</small>
+.jl-dashboard .activity-time {
+    color: #8994a7;
+    font-size: 8px;
+    white-space: nowrap;
+    margin-left: auto;
+}
 
-                    <h2>X MIPA 3 — Biologi Praktikum</h2>
+.jl-dashboard .text-link {
+    color: #2859d9;
+    font-size: 9px;
+    text-decoration: none;
+    font-weight: 700;
+}
 
-                    <p>⌖ Laboratorium IPA (Gedung B · Lt. 2)</p>
-
-                    <div class="schedule-bottom">
-                        <span>Materi: Struktur Jaringan Tumbuhan</span>
-                        <span>→</span>
-                    </div>
-                </section>
-
-                <!-- AKTIVITAS -->
-                <section class="panel activity-panel">
-                    <div class="activity-heading">
-                        <div>
-                            <h2>Aktivitas Terbaru</h2>
-                            <p>Pembaruan sistem akademik hari ini</p>
-                        </div>
-                        <span>◷</span>
-                    </div>
-
-                    <div class="activity-list">
-                        <?php foreach ($activities as $activity): ?>
-                            <article class="activity-item searchable-row">
-                                <span class="activity-icon <?= htmlspecialchars($activity['type']) ?>">
-                                    <?= htmlspecialchars($activity['icon']) ?>
-                                </span>
-
-                                <div>
-                                    <strong>
-                                        <?= htmlspecialchars($activity['title']) ?>
-                                    </strong>
-
-                                    <p>
-                                        <?= htmlspecialchars($activity['description']) ?>
-                                    </p>
-                                </div>
-                            </article>
-                        <?php endforeach; ?>
-                    </div>
-                </section>
-
-            </div>
-        </div>
-
-        <footer class="page-footer">
-            © 2026 JosLearn · Portal Akademik SMAN 1 Rejoso
-        </footer>
-
-    </main>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const searchInput = document.getElementById('dashboardSearch');
-    const searchableRows = document.querySelectorAll('.searchable-row');
-
-    if (!searchInput) {
-        return;
+@media (max-width: 1100px) {
+    .jl-dashboard .stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    searchInput.addEventListener('input', function () {
-        const keyword = this.value.trim().toLowerCase();
+    .jl-dashboard .dashboard-columns {
+        grid-template-columns: 1fr;
+    }
+}
 
-        searchableRows.forEach(function (row) {
-            const content = row.textContent.toLowerCase();
-            row.hidden = keyword !== '' && !content.includes(keyword);
-        });
-    });
-});
-</script>
+@media (max-width: 575px) {
+    .jl-dashboard .dash-heading {
+        align-items: flex-start;
+    }
 
-</body>
-</html>
+    .jl-dashboard .welcome-panel {
+        padding: 20px;
+    }
+
+    .jl-dashboard .welcome-panel h2 {
+        font-size: 20px;
+    }
+
+    .jl-dashboard .stat-grid {
+        gap: 8px;
+    }
+
+    .jl-dashboard .stat-card {
+        padding: 12px;
+    }
+
+    .jl-dashboard .stat-value {
+        font-size: 21px;
+    }
+
+    .jl-dashboard .schedule-row {
+        grid-template-columns: 57px minmax(0, 1fr);
+    }
+
+    .jl-dashboard .schedule-row > .status-pill {
+        grid-column: 2;
+        justify-self: start;
+    }
+
+    .jl-dashboard .activity-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<div class="jl-dashboard">
+
+    <!-- Judul dashboard -->
+    <div class="dash-heading">
+        <div>
+            <h1>Dashboard <span class="live-label">● Live Data</span></h1>
+            <p>Selamat datang kembali, Bapak/Ibu Guru di Portal Akademik SMAN 1 Rejoso</p>
+        </div>
+        <span class="small-pill">
+            <i class="bi bi-calendar3"></i>
+            T.A. 2026/2027 · Semester Ganjil
+        </span>
+    </div>
+
+    <!-- Banner sambutan -->
+    <section class="welcome-panel">
+        <span class="eyebrow">
+            <i class="bi bi-mortarboard"></i>
+            TAHUN AJARAN 2026/2027 GANJIL · KURIKULUM MERDEKA
+        </span>
+
+        <h2>Selamat Datang, Bapak Ahmad<br>Fauzi, M.Pd</h2>
+
+        <p>
+            Portal Akademik Guru Mata Pelajaran Matematika dan Wali Kelas XI-3
+            SMAN 1 Rejoso. Kelola agenda pembelajaran, presensi digital,
+            dan validasi capaian rapor secara efisien.
+        </p>
+
+        <div class="welcome-tags">
+            <span><i class="bi bi-person-workspace"></i> Guru Matematika (Fase E & F)</span>
+            <span><i class="bi bi-people"></i> Wali Kelas XI-3</span>
+            <span><i class="bi bi-check-circle"></i> Status Akun: Aktif</span>
+        </div>
+    </section>
+
+    <!-- Ringkasan statistik -->
+    <section class="stat-grid">
+
+        <article class="stat-card">
+            <div class="stat-top">
+                <span class="stat-label">KELAS DIAMPU</span>
+                <span class="stat-icon"><i class="bi bi-people-fill"></i></span>
+            </div>
+            <div class="stat-value">4 Rombel</div>
+            <div class="stat-note">Kelas aktif semester ini</div>
+        </article>
+
+        <article class="stat-card">
+            <div class="stat-top">
+                <span class="stat-label">TOTAL SISWA</span>
+                <span class="stat-icon"><i class="bi bi-person-vcard"></i></span>
+            </div>
+            <div class="stat-value">128 Siswa</div>
+            <div class="stat-note">Total siswa bimbingan</div>
+        </article>
+
+        <article class="stat-card">
+            <div class="stat-top">
+                <span class="stat-label">ABSENSI HARI INI</span>
+                <span class="stat-icon"><i class="bi bi-person-check"></i></span>
+            </div>
+            <div class="stat-value">3 Kelas Aktif</div>
+            <div class="stat-note">2 selesai, 1 berlangsung</div>
+        </article>
+
+        <article class="stat-card">
+            <div class="stat-top">
+                <span class="stat-label">PROGRES INPUT NILAI</span>
+                <span class="stat-icon"><i class="bi bi-file-earmark-check"></i></span>
+            </div>
+            <div class="stat-value">88%</div>
+            <div class="progress">
+                <div class="progress-bar" style="width:88%"></div>
+            </div>
+            <div class="stat-note mt-2">112 dari 128 siswa</div>
+        </article>
+
+    </section>
+
+    <!-- Jadwal dan progres nilai -->
+    <section class="dashboard-columns">
+
+        <div>
+            <article class="dash-card">
+                <div class="card-heading">
+                    <div>
+                        <h3><i class="bi bi-calendar-week text-primary"></i> Jadwal Mengajar Hari Ini</h3>
+                        <p>Senin, 28 September 2026 · 8 Jam Pelajaran (JP)</p>
+                    </div>
+                    <span class="small-pill">Ruang Guru A-12</span>
+                </div>
+
+                <div class="schedule-row">
+                    <div class="schedule-time">07.00–08.30</div>
+                    <div class="schedule-info">
+                        <strong>Kelas X-3 · Matematika Wajib</strong>
+                        <span>2 JP · Pagi</span>
+                    </div>
+                    <span class="status-pill status-done">✓ Selesai</span>
+                </div>
+
+                <div class="schedule-row">
+                    <div class="schedule-time current">09.00–10.30</div>
+                    <div class="schedule-info">
+                        <strong>Kelas X-5 · Ruang 105</strong>
+                        <span>Matematika Wajib · Sistem Persamaan</span>
+                    </div>
+                    <span class="status-pill status-live">Berlangsung</span>
+                </div>
+
+                <div class="schedule-row">
+                    <div class="schedule-time">11.00–12.30</div>
+                    <div class="schedule-info">
+                        <strong>Kelas XI-3 · Matematika Lanjut</strong>
+                        <span>Ruang 203 · Transformasi</span>
+                    </div>
+                    <span class="status-pill status-wait">Menunggu</span>
+                </div>
+
+                <div class="schedule-row">
+                    <div class="schedule-time">13.15–14.45</div>
+                    <div class="schedule-info">
+                        <strong>Kelas XII-6 · Matematika Lanjut</strong>
+                        <span>Ruang 206 · Persamaan</span>
+                    </div>
+                    <span class="status-pill status-wait">Menunggu</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <span class="text-secondary" style="font-size:9px">
+                        Total beban tatap muka: 8 JP/hari
+                    </span>
+                    <a href="<?= e(jl_url('teacher/attendance_manage')) ?>"
+                       class="text-link">Lihat Absensi <i class="bi bi-arrow-right"></i></a>
+                </div>
+            </article>
+        </div>
+
+        <div>
+            <article class="dash-card">
+                <div class="card-heading">
+                    <div>
+                        <h3><i class="bi bi-clipboard-data text-primary"></i> Progres Penilaian Rapor</h3>
+                        <p>Rekap formatif dan sumatif per kelas</p>
+                    </div>
+                    <span class="small-pill">E-Rapor</span>
+                </div>
+
+                <div class="progress-item">
+                    <div class="progress-title">
+                        <strong>Kelas X-3 · Matematika Wajib</strong>
+                        <span>95%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width:95%"></div>
+                    </div>
+                    <div class="progress-caption">
+                        <span>30 dari 32 siswa lengkap</span>
+                        <span>Siap 2 remedial</span>
+                    </div>
+                </div>
+
+                <div class="progress-item">
+                    <div class="progress-title">
+                        <strong>Kelas X-5 · Matematika Wajib</strong>
+                        <span>85%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width:85%"></div>
+                    </div>
+                    <div class="progress-caption">
+                        <span>27 dari 32 siswa lengkap</span>
+                        <span>5 belum masuk</span>
+                    </div>
+                </div>
+
+                <div class="progress-item">
+                    <div class="progress-title">
+                        <strong>Kelas XI-3 · Wali Kelas</strong>
+                        <span>100%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" style="width:100%"></div>
+                    </div>
+                    <div class="progress-caption">
+                        <span>32/32 tuntas terverifikasi</span>
+                        <span>Siap cetak rapor</span>
+                    </div>
+                </div>
+
+                <div class="progress-item">
+                    <div class="progress-title">
+                        <strong>Kelas XII-6 · Matematika Lanjut</strong>
+                        <span>72%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width:72%"></div>
+                    </div>
+                    <div class="progress-caption">
+                        <span>23 dari 32 siswa lengkap</span>
+                        <span>TP-4 belum masuk</span>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <a href="<?= e(jl_url('teacher/report_subject_grades')) ?>">
+                        <i class="bi bi-pencil-square"></i> Input Nilai Cepat
+                    </a>
+                    <a class="secondary" href="<?= e(jl_url('teacher/report_class_select')) ?>">
+                        <i class="bi bi-patch-check"></i> Validasi Rapor XI-3
+                    </a>
+                </div>
+            </article>
+        </div>
+
+    </section>
+
+    <!-- Aktivitas terbaru -->
+    <section class="dash-card">
+        <div class="card-heading">
+            <div>
+                <h3><i class="bi bi-clock-history text-primary"></i> Aktivitas & Log Akademik Terbaru</h3>
+                <p>Jejak rekaman sistem akademik, presensi, dan nilai</p>
+            </div>
+            <a href="#" class="text-link">Lihat Semua Log Audit ›</a>
+        </div>
+
+        <div class="activity-grid">
+
+            <div class="activity-item">
+                <span class="activity-icon"><i class="bi bi-check-circle"></i></span>
+                <div>
+                    <strong>Absensi Kelas X-3 Terkirim</strong>
+                    <p>Data kehadiran berhasil tersinkronisasi otomatis ke server.</p>
+                </div>
+                <span class="activity-time">08.35 WIB</span>
+            </div>
+
+            <div class="activity-item">
+                <span class="activity-icon"><i class="bi bi-file-earmark-check"></i></span>
+                <div>
+                    <strong>Nilai Formatif TP-3 XI-3 Disimpan Draft</strong>
+                    <p>Matematika Tingkat Lanjut · Draft siap ditinjau.</p>
+                </div>
+                <span class="activity-time">07.15 WIB</span>
+            </div>
+
+            <div class="activity-item">
+                <span class="activity-icon"><i class="bi bi-shield-lock"></i></span>
+                <div>
+                    <strong>3 Siswa XI-3 Mengajukan Surat Sakit</strong>
+                    <p>Lampiran surat dokter diterima dan menunggu verifikasi.</p>
+                </div>
+                <span class="activity-time">Kemarin</span>
+            </div>
+
+            <div class="activity-item">
+                <span class="activity-icon"><i class="bi bi-people"></i></span>
+                <div>
+                    <strong>Rapat Koordinasi Kurikulum Merdeka</strong>
+                    <p>Penyelarasan modul ajar dan persiapan asesmen sumatif.</p>
+                </div>
+                <span class="activity-time">Jumat</span>
+            </div>
+
+        </div>
+    </section>
+
+</div>
+
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>
 ```
