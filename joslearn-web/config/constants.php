@@ -1,4 +1,12 @@
 <?php
 // Konstanta sistem JosLearn.
-define('BASE_URL', '/joslearn-web/');
-define('GEOFENCE_RADIUS_METERS', 80);
+
+if (!defined('BASE_URL')) {
+    define('BASE_URL', '/joslearn-website/joslearn-web');
+}
+
+// true  = OTP & database dilewati (untuk menguji tampilan)
+// false = alur asli (OTP + database)
+if (!defined('DEV_MODE')) {
+    define('DEV_MODE', true);
+}
