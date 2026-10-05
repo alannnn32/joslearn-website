@@ -433,6 +433,7 @@ require_once __DIR__ . '/../includes/sidebar_teacher.php';
             <h1>Dashboard <span class="live-label">● Live Data</span></h1>
             <p>Selamat datang kembali, Bapak/Ibu Guru di Portal Akademik SMAN 1 Rejoso</p>
         </div>
+
         <span class="small-pill">
             <i class="bi bi-calendar3"></i>
             T.A. 2026/2027 · Semester Ganjil
@@ -558,8 +559,11 @@ require_once __DIR__ . '/../includes/sidebar_teacher.php';
                     <span class="text-secondary" style="font-size:9px">
                         Total beban tatap muka: 8 JP/hari
                     </span>
+
                     <a href="<?= e(jl_url('teacher/attendance_manage')) ?>"
-                       class="text-link">Lihat Absensi <i class="bi bi-arrow-right"></i></a>
+                       class="text-link">
+                        Lihat Absensi <i class="bi bi-arrow-right"></i>
+                    </a>
                 </div>
             </article>
         </div>
@@ -579,9 +583,11 @@ require_once __DIR__ . '/../includes/sidebar_teacher.php';
                         <strong>Kelas X-3 · Matematika Wajib</strong>
                         <span>95%</span>
                     </div>
+
                     <div class="progress">
                         <div class="progress-bar" style="width:95%"></div>
                     </div>
+
                     <div class="progress-caption">
                         <span>30 dari 32 siswa lengkap</span>
                         <span>Siap 2 remedial</span>
@@ -593,9 +599,11 @@ require_once __DIR__ . '/../includes/sidebar_teacher.php';
                         <strong>Kelas X-5 · Matematika Wajib</strong>
                         <span>85%</span>
                     </div>
+
                     <div class="progress">
                         <div class="progress-bar" style="width:85%"></div>
                     </div>
+
                     <div class="progress-caption">
                         <span>27 dari 32 siswa lengkap</span>
                         <span>5 belum masuk</span>
@@ -607,9 +615,11 @@ require_once __DIR__ . '/../includes/sidebar_teacher.php';
                         <strong>Kelas XI-3 · Wali Kelas</strong>
                         <span>100%</span>
                     </div>
+
                     <div class="progress">
                         <div class="progress-bar bg-success" style="width:100%"></div>
                     </div>
+
                     <div class="progress-caption">
                         <span>32/32 tuntas terverifikasi</span>
                         <span>Siap cetak rapor</span>
@@ -621,9 +631,11 @@ require_once __DIR__ . '/../includes/sidebar_teacher.php';
                         <strong>Kelas XII-6 · Matematika Lanjut</strong>
                         <span>72%</span>
                     </div>
+
                     <div class="progress">
                         <div class="progress-bar" style="width:72%"></div>
                     </div>
+
                     <div class="progress-caption">
                         <span>23 dari 32 siswa lengkap</span>
                         <span>TP-4 belum masuk</span>
@@ -634,7 +646,9 @@ require_once __DIR__ . '/../includes/sidebar_teacher.php';
                     <a href="<?= e(jl_url('teacher/report_subject_grades')) ?>">
                         <i class="bi bi-pencil-square"></i> Input Nilai Cepat
                     </a>
-                    <a class="secondary" href="<?= e(jl_url('teacher/report_class_select')) ?>">
+
+                    <a class="secondary"
+                       href="<?= e(jl_url('teacher/report_class_select')) ?>">
                         <i class="bi bi-patch-check"></i> Validasi Rapor XI-3
                     </a>
                 </div>
@@ -647,47 +661,67 @@ require_once __DIR__ . '/../includes/sidebar_teacher.php';
     <section class="dash-card">
         <div class="card-heading">
             <div>
-                <h3><i class="bi bi-clock-history text-primary"></i> Aktivitas & Log Akademik Terbaru</h3>
+                <h3>
+                    <i class="bi bi-clock-history text-primary"></i>
+                    Aktivitas & Log Akademik Terbaru
+                </h3>
                 <p>Jejak rekaman sistem akademik, presensi, dan nilai</p>
             </div>
+
             <a href="#" class="text-link">Lihat Semua Log Audit ›</a>
         </div>
 
         <div class="activity-grid">
 
             <div class="activity-item">
-                <span class="activity-icon"><i class="bi bi-check-circle"></i></span>
+                <span class="activity-icon">
+                    <i class="bi bi-check-circle"></i>
+                </span>
+
                 <div>
                     <strong>Absensi Kelas X-3 Terkirim</strong>
                     <p>Data kehadiran berhasil tersinkronisasi otomatis ke server.</p>
                 </div>
+
                 <span class="activity-time">08.35 WIB</span>
             </div>
 
             <div class="activity-item">
-                <span class="activity-icon"><i class="bi bi-file-earmark-check"></i></span>
+                <span class="activity-icon">
+                    <i class="bi bi-file-earmark-check"></i>
+                </span>
+
                 <div>
                     <strong>Nilai Formatif TP-3 XI-3 Disimpan Draft</strong>
                     <p>Matematika Tingkat Lanjut · Draft siap ditinjau.</p>
                 </div>
+
                 <span class="activity-time">07.15 WIB</span>
             </div>
 
             <div class="activity-item">
-                <span class="activity-icon"><i class="bi bi-shield-lock"></i></span>
+                <span class="activity-icon">
+                    <i class="bi bi-shield-lock"></i>
+                </span>
+
                 <div>
                     <strong>3 Siswa XI-3 Mengajukan Surat Sakit</strong>
                     <p>Lampiran surat dokter diterima dan menunggu verifikasi.</p>
                 </div>
+
                 <span class="activity-time">Kemarin</span>
             </div>
 
             <div class="activity-item">
-                <span class="activity-icon"><i class="bi bi-people"></i></span>
+                <span class="activity-icon">
+                    <i class="bi bi-people"></i>
+                </span>
+
                 <div>
                     <strong>Rapat Koordinasi Kurikulum Merdeka</strong>
                     <p>Penyelarasan modul ajar dan persiapan asesmen sumatif.</p>
                 </div>
+
                 <span class="activity-time">Jumat</span>
             </div>
 
@@ -697,4 +731,3 @@ require_once __DIR__ . '/../includes/sidebar_teacher.php';
 </div>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
-```

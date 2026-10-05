@@ -557,7 +557,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
 
                     <div class="reset-actions">
-                        <button type="button" class="btn-reset btn-reset-cancel" onclick="window.history.back();">Batal</button>
+                        <a href="detail_profil_siswa.php?id=<?php echo urlencode($id_siswa); ?>" class="btn-reset btn-reset-cancel" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Batal</a>
                         <button type="submit" class="btn-reset btn-reset-submit">Reset Password</button>
                     </div>
 
