@@ -124,7 +124,7 @@
                 </a>
 
                 <div class="menu-category">Data Master</div>
-                <a href="#" class="nav-link">
+                <a href="../teacher/data_siswa.php" class="nav-link">
                     <i data-lucide="users" style="width: 18px; height: 18px;"></i> Data Siswa
                 </a>
                 <a href="#" class="nav-link">

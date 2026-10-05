@@ -73,11 +73,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Detail Profil Siswa - JosLearn</title>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -350,7 +351,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             display: flex;
             align-items: center;
             gap: 10px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
         .breadcrumb {
@@ -394,7 +395,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             border-radius: 12px;
             padding: 24px;
             margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
         }
 
         .student-header {
@@ -540,7 +541,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
         }
 
         .stat-card .stat-value {
@@ -555,9 +556,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             color: #94a3b8;
         }
 
-        .stat-card.stat-hadir .stat-value { color: #16a34a; }
-        .stat-card.stat-izin .stat-value { color: #d97706; }
-        .stat-card.stat-sakit .stat-value { color: #dc2626; }
+        .stat-card.stat-hadir .stat-value {
+            color: #16a34a;
+        }
+
+        .stat-card.stat-izin .stat-value {
+            color: #d97706;
+        }
+
+        .stat-card.stat-sakit .stat-value {
+            color: #dc2626;
+        }
 
         .rapor-card-title {
             font-size: 14px;
@@ -613,8 +622,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
 
         @keyframes modalFadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .modal-icon-container {
@@ -685,12 +701,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
 
         @media (max-width: 900px) {
-            .sidebar { display: none; }
-            .info-grid { grid-template-columns: 1fr; }
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .sidebar {
+                display: none;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
+
 <body>
 
     <aside class="sidebar">
@@ -771,7 +796,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     </aside>
 
     <div class="main-wrapper">
-        
+
         <header class="top-header">
             <div class="header-meta">
                 <div class="academic-year">Tahun Ajaran 2024/2025 • Semester Genap</div>
@@ -800,7 +825,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         </header>
 
         <main class="content-body">
-            
+
             <!-- Output Alert Sukses Penonaktifan -->
             <?php if (!empty($success_message)): ?>
                 <div class="alert-success">
@@ -825,7 +850,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     <div class="student-avatar-large"><?php echo $inisial; ?></div>
                     <div class="student-title-info">
                         <h2><?php echo htmlspecialchars($siswa['nama']); ?></h2>
-                        <p>NIS: <?php echo htmlspecialchars($siswa['nis']); ?> • Kelas: <?php echo htmlspecialchars($siswa['kelas']); ?></p>
+                        <p>NIS: <?php echo htmlspecialchars($siswa['nis']); ?> • Kelas:
+                            <?php echo htmlspecialchars($siswa['kelas']); ?></p>
                     </div>
                 </div>
 
@@ -836,7 +862,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     </div>
                     <div class="info-box">
                         <div class="label">Status Akun</div>
-                        <div class="value <?php echo ($siswa['status_akun'] === 'Aktif') ? 'status-active' : 'status-inactive'; ?>">
+                        <div
+                            class="value <?php echo ($siswa['status_akun'] === 'Aktif') ? 'status-active' : 'status-inactive'; ?>">
                             <?php echo htmlspecialchars($siswa['status_akun']); ?>
                         </div>
                     </div>
@@ -865,8 +892,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     Perubahan data dan status akun akan otomatis masuk ke Log Aktivitas.
                 </div>
                 <div class="action-buttons-group">
-                    <a href="data_siswa.php" class="btn btn-cancel">Batal</a>
-                    <a href="reset_password_siswa.php?nis=<?php echo urlencode($siswa['nis']); ?>" class="btn btn-reset">Reset Password</a>
+                    <a href="../teacher/data_siswa.php" class="btn btn-cancel">Batal</a>
+                    <a href="reset_password_siswa.php?nis=<?php echo urlencode($siswa['nis']); ?>"
+                        class="btn btn-reset">Reset Password</a>
                     <button type="button" class="btn btn-danger" onclick="showModal()">Nonaktifkan</button>
                 </div>
             </div>
@@ -910,12 +938,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             <div class="modal-icon-container">!</div>
             <div class="modal-title">Nonaktifkan akun siswa?</div>
             <div class="modal-description">
-                <?php echo htmlspecialchars($siswa['nama']); ?> tidak dapat login ke aplikasi selama akun dinonaktifkan. Data absensi dan rapor tetap tersimpan.
+                <?php echo htmlspecialchars($siswa['nama']); ?> tidak dapat login ke aplikasi selama akun dinonaktifkan.
+                Data absensi dan rapor tetap tersimpan.
             </div>
-            
+
             <div class="modal-actions">
                 <button type="button" class="btn-modal-cancel" onclick="hideModal()">Batal</button>
-                
+
                 <!-- Form Post untuk memproses penonaktifan di halaman yang sama -->
                 <form method="POST" style="flex: 1;">
                     <input type="hidden" name="action" value="nonaktifkan">
@@ -938,4 +967,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
     </script>
 </body>
+
 </html>
