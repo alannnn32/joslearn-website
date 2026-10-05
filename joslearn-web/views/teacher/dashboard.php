@@ -9,10 +9,7 @@ $pageTitle = 'Dashboard Guru';
 $activeMenu = 'dashboard';
 
 require_once __DIR__ . '/../includes/header.php';
-<<<<<<< HEAD
 require_once __DIR__ . '/../includes/sidebar_teacher.php';
-=======
->>>>>>> 9dcc683a776e551007b1f2a3b097069206d90b37
 ?>
 
 <style>
@@ -700,8 +697,3 @@ require_once __DIR__ . '/../includes/sidebar_teacher.php';
 </div>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
-<<<<<<< HEAD
-```
-=======
-```
->>>>>>> 9dcc683a776e551007b1f2a3b097069206d90b37
