@@ -499,6 +499,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             transition: all 0.2s ease;
         }
 
+        .btn-cancel {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+        }
+
+        .btn-cancel:hover {
+            background-color: #f1f5f9;
+            color: #1e293b;
+        }
+
         .btn-reset {
             background-color: #1d4ed8;
             color: #ffffff;
@@ -854,6 +865,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     Perubahan data dan status akun akan otomatis masuk ke Log Aktivitas.
                 </div>
                 <div class="action-buttons-group">
+                    <a href="data_siswa.php" class="btn btn-cancel">Batal</a>
                     <a href="reset_password_siswa.php?nis=<?php echo urlencode($siswa['nis']); ?>" class="btn btn-reset">Reset Password</a>
                     <button type="button" class="btn btn-danger" onclick="showModal()">Nonaktifkan</button>
                 </div>
