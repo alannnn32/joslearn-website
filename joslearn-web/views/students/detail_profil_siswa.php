@@ -4,7 +4,7 @@ session_start();
 // 1. Contoh Koneksi Database (sesuaikan dengan koneksi database kamu)
 // $conn = mysqli_connect("localhost", "root", "", "db_sekolah");
 
-$nis = $_GET['nis'] ?? '10231';
+$nis = $_GET['nis'] ?? '';
 
 /* 
 ====================================================================
@@ -252,25 +252,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
         .search-box-top {
             position: relative;
-            width: 280px;
+            display: flex;
+            align-items: center;
+            width: 300px;
         }
 
         .search-box-top input {
             width: 100%;
-            padding: 8px 12px 8px 36px;
+            padding: 10px 16px 10px 42px;
             background-color: #f1f5f9;
             border: 1px solid transparent;
-            border-radius: 20px;
+            border-radius: 24px;
             font-size: 13px;
+            color: #334155;
             outline: none;
+            transition: all 0.2s ease;
         }
 
-        .search-box-top i {
+        .search-box-top input::placeholder {
+            color: #64748b;
+        }
+
+        .search-box-top input:focus {
+            background-color: #ffffff;
+            border-color: #cbd5e1;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        }
+
+        .search-box-top i, 
+        .search-box-top svg {
             position: absolute;
-            left: 12px;
+            left: 14px;
             top: 50%;
             transform: translateY(-50%);
-            color: #94a3b8;
+            color: #64748b;
+            pointer-events: none;
+            width: 18px;
+            height: 18px;
         }
 
         .icon-btn {
@@ -804,10 +822,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             </div>
 
             <div class="header-actions">
-                <div class="search-box-top">
-                    <i data-lucide="search" style="width: 16px;"></i>
-                    <input type="text" placeholder="Cari data siswa, kelas...">
-                </div>
+                <!-- Fitur Pencarian Disatukan dengan Form -->
+                <form action="" method="GET" class="search-box-top">
+                    <i data-lucide="search"></i>
+                    <input type="text" name="nis" placeholder="Cari data siswa, kelas..." value="<?php echo htmlspecialchars($nis); ?>">
+                </form>
 
                 <button class="icon-btn">
                     <i data-lucide="bell" style="width: 18px;"></i>
@@ -850,8 +869,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     <div class="student-avatar-large"><?php echo $inisial; ?></div>
                     <div class="student-title-info">
                         <h2><?php echo htmlspecialchars($siswa['nama']); ?></h2>
-                        <p>NIS: <?php echo htmlspecialchars($siswa['nis']); ?> • Kelas:
-                            <?php echo htmlspecialchars($siswa['kelas']); ?></p>
+                        <p>NIS: <?php echo htmlspecialchars($siswa['nis']); ?> • Kelas: <?php echo htmlspecialchars($siswa['kelas']); ?></p>
                     </div>
                 </div>
 
@@ -862,8 +880,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     </div>
                     <div class="info-box">
                         <div class="label">Status Akun</div>
-                        <div
-                            class="value <?php echo ($siswa['status_akun'] === 'Aktif') ? 'status-active' : 'status-inactive'; ?>">
+                        <div class="value <?php echo ($siswa['status_akun'] === 'Aktif') ? 'status-active' : 'status-inactive'; ?>">
                             <?php echo htmlspecialchars($siswa['status_akun']); ?>
                         </div>
                     </div>
@@ -893,8 +910,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 </div>
                 <div class="action-buttons-group">
                     <a href="../teacher/data_siswa.php" class="btn btn-cancel">Batal</a>
-                    <a href="reset_password_siswa.php?nis=<?php echo urlencode($siswa['nis']); ?>"
-                        class="btn btn-reset">Reset Password</a>
+                    <a href="reset_password_siswa.php?nis=<?php echo urlencode($siswa['nis']); ?>" class="btn btn-reset">Reset Password</a>
                     <button type="button" class="btn btn-danger" onclick="showModal()">Nonaktifkan</button>
                 </div>
             </div>

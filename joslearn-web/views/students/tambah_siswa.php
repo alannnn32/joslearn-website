@@ -224,9 +224,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             gap: 16px;
         }
 
+        /* PERBAIKAN SEARCH BOX */
         .search-box {
             position: relative;
             width: 280px;
+            display: flex;
+            align-items: center;
         }
 
         .search-box input {
@@ -245,12 +248,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-color: #cbd5e1;
         }
 
-        .search-box i {
+        .search-box svg, .search-box i {
             position: absolute;
             left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
             color: #94a3b8;
+            pointer-events: none;
         }
 
         .icon-btn {

@@ -1,31 +1,72 @@
 <?php
-session_start();
+// Mencegah Notice session ganda
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-$error_message = '';$success_message = '';
+$host = 'localhost';$db   = 'db_sekolah_login';
+$user = 'root';$pass = '';
+
+$error_message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = isset($_POST['username']) ? trim($_POST['username']) : '';$password = isset($_POST['password']) ? trim($_POST['password']) : '';
-    $remember = isset($_POST['remember']) ? true : false;
+    $input_user = trim($_POST['username']);
+    $input_pass = trim($_POST['password']);
 
-    if (empty($username) || empty($password)) {$error_message = 'Silakan isi Nama Pengguna dan Kata Sandi!';
+    if (empty($input_user) || empty($input_pass)) {$error_message = 'Silakan isi Nama Pengguna dan Kata Sandi!';
     } else {
-        if ($username === 'admin' && $password === '123456') {$_SESSION['user_logged_in'] = true;
-            $_SESSION['username'] =$username;
+        try {
+            $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user,$pass, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+            ]);
 
-            if ($remember) {
-                setcookie('user_login', $username, time() + (86400 * 30), "/");
+            // Mencari user berdasarkan username, NIP, atau email sekolah agar lebih fleksibel
+            $stmt =$pdo->prepare("SELECT * FROM users WHERE username = ? OR nip = ? OR email_sekolah = ? LIMIT 1");
+            $stmt->execute([$input_user, $input_user,$input_user]);
+            $user_data =$stmt->fetch();
+
+            $db_pass = '';
+            if ($user_data) {$db_pass = $user_data['password'] ?? $user_data['password_hash'] ?? '';
             }
 
-            header('Location: dashboard.php');
-            exit();
-        } else {
-            $error_message = 'Nama pengguna atau kata sandi salah!';
+            $is_password_valid = false;
+            if ($user_data && !empty($db_pass)) {
+                // Mendukung password teks biasa maupun password ter-hash dari register.php
+                if ($input_pass === $db_pass || password_verify($input_pass, $db_pass)) {$is_password_valid = true;
+                }
+            }
+
+            // Normalisasi role menjadi standar: 'admin' atau 'guru'
+            $role = strtolower($user_data['role'] ?? '');
+            if ($role === 'teacher') {$role = 'guru';
+            }
+
+            // Validasi hanya role 'admin' atau 'guru' yang boleh masuk
+            if ($is_password_valid) {
+                if (in_array($role, ['admin', 'guru'])) {$_SESSION['user_logged_in'] = true;
+                    $_SESSION['user_id']        =$user_data['id'];
+                    $_SESSION['username']       =$user_data['username'];
+                    $_SESSION['nama_lengkap']   =$user_data['nama_lengkap'];
+                    $_SESSION['role']           =$role;
+
+                    header('Location: ../../index.php');
+                    exit();
+                } else {
+                    $error_message = 'Akses ditolak: Akun Anda tidak memiliki otoritas Admin atau Guru!';
+                }
+            } else {
+                $error_message = 'Nama pengguna atau kata sandi salah!';
+            }
+        } catch (Exception $e) {
+            $error_message = 'Terjadi kesalahan sistem: ' .$e->getMessage();
         }
     }
 }
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,7 +75,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-
     <style>
         * {
             margin: 0;
@@ -58,8 +98,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flex-direction: column;
             justify-content: space-between;
             padding: 40px;
-            position: relative;
-            overflow: hidden;
         }
 
         .sidebar-brand {
@@ -67,8 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             align-items: center;
             gap: 12px;
             font-weight: 700;
-            font-size: 20px;
-            letter-spacing: 0.5px;
+            font-size: 18px;
         }
 
         .sidebar-brand .logo-icon {
@@ -80,35 +117,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             align-items: center;
             justify-content: center;
             color: #1e6bf2;
+            font-weight: bold;
         }
 
         .sidebar-content {
-            margin-top: auto;
-            margin-bottom: auto;
+            margin: auto 0;
             max-width: 420px;
         }
 
         .main-logo-box {
-            width: 80px;
-            height: 80px;
+            width: 72px;
+            height: 72px;
             background: #ffffff;
-            border-radius: 20px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin-bottom: 24px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            color: #1e6bf2;
+            font-weight: bold;
+            font-size: 32px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         }
 
         .sidebar-content h1 {
-            font-size: 38px;
+            font-size: 36px;
             font-weight: 700;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
 
         .sidebar-content p.subtitle {
-            font-size: 18px;
-            font-weight: 400;
+            font-size: 16px;
             opacity: 0.9;
             margin-bottom: 32px;
         }
@@ -155,30 +194,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .form-wrapper {
             width: 100%;
-            max-width: 440px;
+            max-width: 420px;
             margin: auto 0;
         }
 
         .form-header {
-            margin-bottom: 28px;
+            margin-bottom: 24px;
         }
 
         .form-header h2 {
             font-size: 28px;
             font-weight: 700;
             color: #111827;
-            margin-bottom: 6px;
-        }
-
-        .form-header p {
-            font-size: 15px;
-            color: #6b7280;
             margin-bottom: 4px;
         }
 
-        .form-header span {
-            font-size: 11px;
+        .form-header p {
+            font-size: 14px;
+            color: #4b5563;
+        }
+
+        .form-sub-hint {
+            font-size: 12px;
             color: #9ca3af;
+            margin-top: 2px;
         }
 
         .alert {
@@ -189,22 +228,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-
-        .alert-error {
             background-color: #fef2f2;
             color: #991b1b;
             border: 1px solid #fecaca;
         }
 
-        .alert-success {
-            background-color: #f0fdf4;
-            color: #166534;
-            border: 1px solid #bbf7d0;
-        }
-
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
 
         .form-group label {
@@ -212,7 +242,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 13px;
             font-weight: 600;
             color: #374151;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .input-wrapper {
@@ -221,7 +251,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             align-items: center;
         }
 
-        .input-wrapper i, .toggle-btn {
+        .input-wrapper i,
+        .toggle-btn {
             position: absolute;
             color: #9ca3af;
         }
@@ -237,19 +268,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border: none;
             display: flex;
             align-items: center;
-            justify-content: center;
-            padding: 0;
         }
 
         .input-wrapper input {
             width: 100%;
-            padding: 12px 42px 12px 42px;
+            padding: 12px 14px 12px 42px;
             font-size: 14px;
             border: 1px solid #e5e7eb;
             background-color: #f9fafb;
             border-radius: 10px;
             outline: none;
-            transition: all 0.2s ease;
         }
 
         .input-wrapper input:focus {
@@ -258,41 +286,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             box-shadow: 0 0 0 4px rgba(30, 107, 242, 0.1);
         }
 
-        .form-options {
+        .form-row-extra {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
             font-size: 13px;
+            margin-bottom: 20px;
         }
 
         .remember-me {
             display: flex;
             align-items: center;
-            gap: 8px;
-            color: #6b7280;
+            gap: 6px;
+            color: #4b5563;
             cursor: pointer;
-            font-size: 11px;
         }
 
         .remember-me input {
-            accent-color: #1e6bf2;
+            width: 16px;
+            height: 16px;
+            accent-color: #0c56d0;
             cursor: pointer;
         }
 
         .forgot-pass {
-            color: #1e6bf2;
+            color: #0c56d0;
             text-decoration: none;
-            font-weight: 600;
-        }
-
-        .forgot-pass:hover {
-            text-decoration: underline;
+            font-weight: 500;
         }
 
         .btn-submit {
             width: 100%;
-            padding: 14px;
+            padding: 13px;
             background-color: #0c56d0;
             color: white;
             border: none;
@@ -304,28 +329,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             align-items: center;
             justify-content: center;
             gap: 8px;
-            transition: background-color 0.2s ease;
         }
 
         .btn-submit:hover {
             background-color: #0a48b0;
         }
 
-        .register-text {
+        .signup-link {
             text-align: center;
-            margin-top: 24px;
             font-size: 13px;
             color: #6b7280;
+            margin-top: 20px;
         }
 
-        .register-text a {
-            color: #1e6bf2;
+        .signup-link a {
+            color: #0c56d0;
             text-decoration: none;
             font-weight: 600;
-        }
-
-        .register-text a:hover {
-            text-decoration: underline;
         }
 
         .help-text {
@@ -338,10 +358,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             body {
                 flex-direction: column;
             }
-            .sidebar {
-                width: 100%;
-                padding: 30px 20px;
-            }
+
+            .sidebar,
             .main-container {
                 width: 100%;
                 padding: 30px 20px;
@@ -349,74 +367,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </style>
 </head>
-<body>
 
+<body>
     <div class="sidebar">
         <div class="sidebar-brand">
-            <div class="logo-icon">
-                <i data-lucide="graduation-cap" style="width: 20px; height: 20px;"></i>
-            </div>
+            <div class="logo-icon">J</div>
             <span>JOSLEARN</span>
         </div>
-
         <div class="sidebar-content">
-            <div class="main-logo-box">
-                <i data-lucide="graduation-cap" style="width: 44px; height: 44px; color: #1e6bf2;"></i>
-            </div>
+            <div class="main-logo-box">J</div>
             <h1>JosLearn</h1>
             <p class="subtitle">Absensi & Nilai Raport Real Time</p>
-
             <ul class="feature-list">
                 <li class="feature-item">
-                    <div class="check-icon">
-                        <i data-lucide="check" style="width: 14px; height: 14px; color: #ffffff;"></i>
-                    </div>
-                    <span>Pemantauan kehadiran siswa otomatis & akurat</span>
+                    <div class="check-icon"><i data-lucide="check"
+                            style="width: 14px; height: 14px; color: #ffffff;"></i></div><span>Pemantauan kehadiran
+                        siswa otomatis & akurat</span>
                 </li>
                 <li class="feature-item">
-                    <div class="check-icon">
-                        <i data-lucide="check" style="width: 14px; height: 14px; color: #ffffff;"></i>
-                    </div>
-                    <span>Pengolahan nilai raport terpadu & transparan</span>
+                    <div class="check-icon"><i data-lucide="check"
+                            style="width: 14px; height: 14px; color: #ffffff;"></i></div><span>Pengolahan nilai raport
+                        terpadu & transparan</span>
                 </li>
             </ul>
         </div>
-
-        <div class="sidebar-footer">
-            © <?php echo date('Y'); ?> JosLearn. Hak Cipta Dilindungi.
-        </div>
+        <div class="sidebar-footer">© <?php echo date('Y'); ?> JosLearn. Hak Cipta Dilindungi.</div>
     </div>
 
     <div class="main-container">
         <div></div>
-
         <div class="form-wrapper">
             <div class="form-header">
                 <h2>Selamat Datang</h2>
                 <p>Masuk ke JosLearn</p>
-                <span>Gunakan akun Siswa atau Guru yang terdaftar</span>
+                <div class="form-sub-hint">Gunakan akun Admin atau Guru yang terdaftar</div>
             </div>
 
             <?php if (!empty($error_message)): ?>
-                <div class="alert alert-error">
-                    <i data-lucide="alert-circle" style="width: 18px; height: 18px;"></i>
-                    <span><?php echo htmlspecialchars($error_message); ?></span>
+                <div class="alert"><i data-lucide="alert-circle"
+                        style="width: 18px; height: 18px;"></i><span><?php echo htmlspecialchars($error_message); ?></span>
                 </div>
             <?php endif; ?>
 
-            <?php if (!empty($success_message)): ?>
-                <div class="alert alert-success">
-                    <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
-                    <span><?php echo htmlspecialchars($success_message); ?></span>
-                </div>
-            <?php endif; ?>
-
-            <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST">
+            <form action="" method="POST">
                 <div class="form-group">
                     <label for="username">Nama Pengguna</label>
                     <div class="input-wrapper">
                         <i data-lucide="user" class="input-icon-left" style="width: 18px; height: 18px;"></i>
-                        <input type="text" id="username" name="username" placeholder="Masukkan Nama Pengguna atau NIS/NIP" value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>" required>
+                        <input type="text" id="username" name="username"
+                            placeholder="Masukkan NIP atau Email"
+                            value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>"
+                            required>
                     </div>
                 </div>
 
@@ -424,54 +425,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <label for="password">Kata Sandi</label>
                     <div class="input-wrapper">
                         <i data-lucide="lock" class="input-icon-left" style="width: 18px; height: 18px;"></i>
-                        <input type="password" id="password" name="password" placeholder="Masukkan kata sandi Anda" required>
-                        <button type="button" id="togglePasswordBtn" class="toggle-btn">
-                            <i data-lucide="eye" id="togglePasswordIcon" style="width: 18px; height: 18px;"></i>
-                        </button>
+                        <input type="password" id="password" name="password" placeholder="Masukkan kata sandi Anda"
+                            required>
+                        <button type="button" id="togglePasswordBtn" class="toggle-btn"><i data-lucide="eye"
+                                id="togglePasswordIcon" style="width: 18px; height: 18px;"></i></button>
                     </div>
                 </div>
 
-                <div class="form-options">
+                <div class="form-row-extra">
                     <label class="remember-me">
-                        <input type="checkbox" name="remember" <?php echo isset($_POST['remember']) ? 'checked' : ''; ?>> Ingat saya
+                        <input type="checkbox" name="remember"> Ingat saya
                     </label>
-                    <a href="forgot-password.php" class="forgot-pass">Lupa Kata Sandi?</a>
+                    <a href="reset_password.php" class="forgot-pass">Lupa Kata Sandi?</a>
                 </div>
 
-                <button type="submit" class="btn-submit">
-                    Masuk
-                    <i data-lucide="arrow-right" style="width: 18px; height: 18px;"></i>
-                </button>
+                <button type="submit" class="btn-submit">Masuk <i data-lucide="arrow-right"
+                        style="width: 18px; height: 18px;"></i></button>
             </form>
 
-            <p class="register-text">
+            <div class="signup-link">
                 Belum punya akun? <a href="register.php">Daftar akun</a>
-            </p>
+            </div>
         </div>
 
-        <div class="help-text">
-            Memerlukan bantuan akses? Hubungi administrator sekolah
-        </div>
+        <div class="help-text">Memerlukan bantuan akses? Hubungi administrator sekolah</div>
     </div>
 
     <script>
         lucide.createIcons();
-
-        const togglePasswordBtn = document.querySelector('#togglePasswordBtn');
+        const toggleBtn = document.querySelector('#togglePasswordBtn');
         const passwordInput = document.querySelector('#password');
-
-        if (togglePasswordBtn && passwordInput) {
-            togglePasswordBtn.addEventListener('click', function () {
-                const isPassword = passwordInput.getAttribute('type') === 'password';
-                const nextType = isPassword ? 'text' : 'password';
-                const nextIcon = isPassword ? 'eye-off' : 'eye';
-
-                passwordInput.setAttribute('type', nextType);
-
-                this.innerHTML = `<i data-lucide="${nextIcon}" style="width: 18px; height: 18px;"></i>`;
+        if (toggleBtn && passwordInput) {
+            toggleBtn.addEventListener('click', function () {
+                const isPass = passwordInput.getAttribute('type') === 'password';
+                passwordInput.setAttribute('type', isPass ? 'text' : 'password');
+                this.innerHTML = `<i data-lucide="${isPass ? 'eye-off' : 'eye'}" style="width: 18px; height: 18px;"></i>`;
                 lucide.createIcons();
             });
         }
     </script>
 </body>
+
 </html>

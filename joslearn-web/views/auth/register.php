@@ -1,3 +1,64 @@
+<?php
+// Mulai sesi jika belum aktif
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$error_message = '';
+$success_message = '';
+
+// Proses data saat form disubmit
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $role             = trim($_POST['role'] ?? 'guru');
+    $nama_lengkap     = trim($_POST['nama'] ?? '');
+    $email_sekolah    = trim($_POST['email'] ?? '');
+    $nip              = trim($_POST['nomor_identitas'] ?? '');
+    $password         = $_POST['password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
+
+    // Validasi input kosong
+    if (empty($nama_lengkap) || empty($email_sekolah) || empty($nip) || empty($password) || empty($confirm_password)) {
+        $error_message = 'Semua kolom wajib diisi!';
+    } elseif ($password !== $confirm_password) {
+        $error_message = 'Konfirmasi password tidak cocok!';
+    } else {
+        try {
+            // Konfigurasi Database
+            $host = 'localhost';
+            $db   = 'db_sekolah_login';
+            $user = 'root';
+            $pass = '';
+
+            $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+            ]);
+
+            // Cek apakah NIP atau Email sudah terdaftar
+            $stmtCek = $pdo->prepare("SELECT * FROM users WHERE email_sekolah = ? OR nip = ?");
+            $stmtCek->execute([$email_sekolah, $nip]);
+            if ($stmtCek->rowCount() > 0) {
+                $error_message = 'Email sekolah atau Nomor Identitas/NIP tersebut sudah terdaftar!';
+            } else {
+                // Enkripsi password dan simpan ke database
+                $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                $username_default = $nip; // Menggunakan NIP sebagai username default
+
+                $stmtInsert = $pdo->prepare("INSERT INTO users (nama_lengkap, email_sekolah, nip, username, password, role) VALUES (?, ?, ?, ?, ?, ?)");
+                $executed = $stmtInsert->execute([$nama_lengkap, $email_sekolah, $nip, $username_default, $hashed_password, $role]);
+
+                if ($executed) {
+                    $success_message = 'Registrasi berhasil! Silakan masuk ke akun Anda.';
+                } else {
+                    $error_message = 'Gagal mendaftarkan akun. Silakan coba lagi.';
+                }
+            }
+        } catch (Exception $e) {
+            $error_message = 'Terjadi kesalahan sistem: ' . $e->getMessage();
+        }
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -145,8 +206,17 @@
                 <p class="text-muted mb-0" style="font-size: 12px;">Pilih jenis akun yang akan dibuat</p>
             </div>
 
+            <!-- Pesan Notifikasi Error / Berhasil -->
+            <?php if (!empty($error_message)): ?>
+                <div class="alert alert-danger py-2" style="font-size: 12px;"><?php echo htmlspecialchars($error_message); ?></div>
+            <?php endif; ?>
+
+            <?php if (!empty($success_message)): ?>
+                <div class="alert alert-success py-2" style="font-size: 12px;"><?php echo htmlspecialchars($success_message); ?> <a href="login.php" class="fw-bold">Masuk di sini</a></div>
+            <?php endif; ?>
+
             <!-- Form Register -->
-            <form action="index.php?controller=auth&action=register_process" method="POST" id="registerForm">
+            <form action="" method="POST" id="registerForm">
                 <!-- Pilihan Role (Admin / Guru) -->
                 <div class="row g-2 mb-3">
                     <div class="col-6">
@@ -167,19 +237,19 @@
                 <!-- Nama Lengkap -->
                 <div class="mb-2">
                     <label class="form-label">Nama Lengkap</label>
-                    <input type="text" class="form-control" name="nama" placeholder="Nama lengkap" required>
+                    <input type="text" class="form-control" name="nama" placeholder="Nama lengkap" value="<?php echo isset($_POST['nama']) ? htmlspecialchars($_POST['nama']) : ''; ?>" required>
                 </div>
 
                 <!-- Email Sekolah -->
                 <div class="mb-2">
                     <label class="form-label">Email Sekolah</label>
-                    <input type="email" class="form-control" name="email" placeholder="Email sekolah" required>
+                    <input type="email" class="form-control" name="email" placeholder="Email sekolah" value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" required>
                 </div>
 
                 <!-- Nomor Identitas / NIP -->
                 <div class="mb-2">
                     <label class="form-label">Nomor Identitas / NIP</label>
-                    <input type="text" class="form-control" name="nomor_identitas" placeholder="Nomor identitas / NIP" required>
+                    <input type="text" class="form-control" name="nomor_identitas" placeholder="Nomor identitas / NIP" value="<?php echo isset($_POST['nomor_identitas']) ? htmlspecialchars($_POST['nomor_identitas']) : ''; ?>" required>
                 </div>
 
                 <!-- Password -->
@@ -202,7 +272,7 @@
                 <!-- Login Link -->
                 <div class="text-center" style="font-size: 12px;">
                     <span class="text-muted">Sudah punya akun?</span> 
-                    <a href="index.php?controller=auth&action=login" class="text-primary fw-semibold text-decoration-none">Masuk</a>
+                    <a href="login.php" class="text-primary fw-semibold text-decoration-none">Masuk</a>
                 </div>
             </form>
         </div>

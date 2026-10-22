@@ -223,6 +223,8 @@ $total_siswa = count($data_siswa);
         .search-box-top {
             position: relative;
             width: 280px;
+            display: flex;
+            align-items: center;
         }
 
         .search-box-top input {
@@ -241,12 +243,11 @@ $total_siswa = count($data_siswa);
             border-color: #cbd5e1;
         }
 
-        .search-box-top i {
+        .search-box-top svg, .search-box-top i {
             position: absolute;
             left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
             color: #94a3b8;
+            pointer-events: none;
         }
 
         .icon-btn {
@@ -418,6 +419,8 @@ $total_siswa = count($data_siswa);
         .search-box-table {
             position: relative;
             width: 240px;
+            display: flex;
+            align-items: center;
         }
 
         .search-box-table input {
@@ -429,12 +432,11 @@ $total_siswa = count($data_siswa);
             outline: none;
         }
 
-        .search-box-table i {
+        .search-box-table svg, .search-box-table i {
             position: absolute;
             left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
             color: #94a3b8;
+            pointer-events: none;
         }
 
         .dropdown-filter {
