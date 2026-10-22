@@ -3,16 +3,6 @@
  * Modul Data Raport Admin - JosLearn
  * Terintegrasi penuh dengan struktur MVC, Session, dan Layout existing.
  */
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-// Security / Role Guard (Pastikan hanya admin yang dapat mengakses)
-if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-    // Sesuaikan dengan mekanisme redirect existing jika ada
-    // header("Location: index.php?controller=auth&action=login");
-    // exit;
-}
 
 // Ambil data filter dari parameter GET
 $filter_kelas = isset($_GET['kelas']) ? $_GET['kelas'] : '';
@@ -65,228 +55,20 @@ $total_siswa = count($reports);
     <title>Data Raport - Admin JosLearn</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Google Fonts Inter / Plus Jakarta Sans -->
+    <!-- Google Fonts Plus Jakarta Sans -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Admin Layout CSS -->
+    <link href="/joslearn-website/joslearn-web/assets/css/admin-layout.css" rel="stylesheet">
     <style>
-        :root {
-            --primary-blue: #075CCB;
-            --dark-blue: #064FA8;
-            --light-blue: #EAF4FF;
-            --bg-body: #F5F8FC;
-            --text-main: #111827;
-            --text-muted: #64748B;
-            --border-color: #E2E8F0;
-        }
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            margin: 0;
-            overflow-x: hidden;
-        }
-        /* Layout Grid */
-        .admin-wrapper {
-            display: flex;
-            min-height: 100vh;
-        }
-        /* Sidebar Styling */
-        .sidebar-container {
-            width: 145px;
-            background-color: var(--primary-blue);
-            color: #FFFFFF;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: fixed;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            z-index: 1000;
-        }
-        .sidebar-brand {
-            padding: 16px 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 700;
-            font-size: 14px;
-            color: #FFFFFF;
-        }
-        .sidebar-brand-box {
+        /* Report-specific styles */
+        .filter-card {
             background: #FFFFFF;
-            color: var(--primary-blue);
-            width: 24px;
-            height: 24px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 13px;
-        }
-        .sidebar-menu {
-            padding: 0 8px;
-            overflow-y: auto;
-            flex-grow: 1;
-        }
-        .menu-category {
-            font-size: 9px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: rgba(255, 255, 255, 0.6);
-            margin: 14px 0 6px 6px;
-            font-weight: 600;
-        }
-        .menu-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 10px;
-            color: rgba(255, 255, 255, 0.85);
-            text-decoration: none;
-            font-size: 11.5px;
-            font-weight: 500;
-            border-radius: 6px;
-            margin-bottom: 2px;
-            transition: all 0.2s;
-        }
-        .menu-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-            color: #FFFFFF;
-        }
-        .menu-item.active {
-            background: #FFFFFF;
-            color: var(--primary-blue);
-            font-weight: 600;
-        }
-        .sidebar-footer {
-            padding: 12px;
-            border-top: 1px solid rgba(255, 255, 255, 0.15);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .admin-avatar-sm {
-            width: 28px;
-            height: 28px;
-            background: #FFFFFF;
-            color: var(--primary-blue);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 11px;
-        }
-
-        /* Main Content Area */
-        .main-wrapper {
-            margin-left: 145px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
-        }
-        /* Top Header Styling */
-        .top-header {
-            height: 60px;
-            background: #FFFFFF;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 24px;
-            position: sticky;
-            top: 0;
-            z-index: 999;
-        }
-        .header-left-info {
-            font-size: 11px;
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-        .header-left-info .title-top {
-            color: var(--primary-blue);
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-        .header-search {
-            position: relative;
-            width: 280px;
-        }
-        .header-search input {
-            width: 100%;
-            font-size: 11.5px;
-            padding: 6px 12px 6px 32px;
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            background: #FAFAFB;
-        }
-        .header-search i {
-            position: absolute;
-            left: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 14px;
-            height: 14px;
-            color: var(--text-muted);
-        }
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        .header-icon-btn {
-            background: #FAFAFB;
-            border: 1px solid var(--border-color);
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
-            cursor: pointer;
-        }
-        .profile-box {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-align: right;
-        }
-
-        /* Content Body */
-        .content-body {
-            padding: 24px;
-            flex-grow: 1;
-        }
-        .breadcrumb-text {
-            font-size: 11px;
-            color: var(--text-muted);
-            font-weight: 600;
-            margin-bottom: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .page-title {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 2px;
-        }
-        .page-subtitle {
-            font-size: 12.5px;
-            color: var(--text-muted);
-            margin-bottom: 20px;
-        }
-        .card-custom {
-            background: #FFFFFF;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.01);
-            margin-bottom: 20px;
+            border-radius: 12px;
+            border: 1px solid #E2E8F0;
+            padding: 20px;
+            margin-bottom: 24px;
         }
         .filter-header {
             font-size: 10.5px;
@@ -418,104 +200,24 @@ $total_siswa = count($reports);
 </head>
 <body>
 
-<div class="admin-wrapper">
-    <!-- 1. SIDEBAR ADMIN -->
-    <aside class="sidebar-container">
-        <div>
-            <div class="sidebar-brand">
-                <div class="sidebar-brand-box">J</div>
-                <span>JosLearn</span>
-            </div>
-            
-            <div class="sidebar-menu">
-                <div class="menu-category">Menu Utama</div>
-                <a href="index.php?controller=admin&action=dashboard" class="menu-item">
-                    <i data-lucide="layout-dashboard" style="width: 14px; height: 14px;">}</i> Dashboard
-                </a>
+    <!-- SIDEBAR -->
+    <?php include_once $_SERVER['DOCUMENT_ROOT'] . '/joslearn-website/joslearn-web/views/partials/sidebar_admin.php'; ?>
 
-                <div class="menu-category">Data Master</div>
-                <a href="index.php?controller=student&action=index" class="menu-item">
-                    <i data-lucide="users" style="width: 14px; height: 14px;"></i> Data Siswa
-                </a>
-                <a href="index.php?controller=teacher&action=index" class="menu-item">
-                    <i data-lucide="graduation-cap" style="width: 14px; height: 14px;"></i> Data Guru
-                </a>
-                <a href="index.php?controller=assignment&action=index" class="menu-item">
-                    <i data-lucide="folder-kanban" style="width: 14px; height: 14px;"></i> Penugasan
-                </a>
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <!-- HEADER -->
+        <?php include_once $_SERVER['DOCUMENT_ROOT'] . '/joslearn-website/joslearn-web/views/partials/header_admin.php'; ?>
 
-                <div class="menu-category">Absensi</div>
-                <a href="index.php?controller=attendance&action=permission" class="menu-item">
-                    <i data-lucide="file-text" style="width: 14px; height: 14px;"></i> Pengajuan Izin
-                </a>
-                <a href="index.php?controller=attendance&action=recap" class="menu-item">
-                    <i data-lucide="calendar-check" style="width: 14px; height: 14px;"></i> Rekap Absensi
-                </a>
-
-                <div class="menu-category">Rapor</div>
-                <a href="index.php?controller=report&action=verification" class="menu-item">
-                    <i data-lucide="shield-check" style="width: 14px; height: 14px;"></i> Verifikasi Rapor
-                </a>
-                <a href="index.php?controller=report&action=index" class="menu-item active">
-                    <i data-lucide="book-open" style="width: 14px; height: 14px;"></i> Data Raport
-                </a>
-
-                <div class="menu-category">Sistem</div>
-                <a href="index.php?controller=system&action=logs" class="menu-item">
-                    <i data-lucide="activity" style="width: 14px; height: 14px;"></i> Log Aktivitas
-                </a>
-                <a href="index.php?controller=system&action=settings" class="menu-item">
-                    <i data-lucide="settings" style="width: 14px; height: 14px;"></i> Pengaturan
-                </a>
-            </div>
-        </div>
-
-        <!-- Sidebar Footer Profile -->
-        <div class="sidebar-footer">
-            <div class="admin-avatar-sm">AD</div>
-            <div style="overflow: hidden;">
-                <div style="font-weight: 700; font-size: 11px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden;">Admin Sekolah</div>
-                <div style="font-size: 9px; opacity: 0.8;">Administrator</div>
-            </div>
-        </div>
-    </aside>
-
-    <!-- MAIN CONTENT CONTAINER -->
-    <div class="main-wrapper">
-        <!-- 2. HEADER / TOPBAR -->
-        <header class="top-header">
-            <div class="header-left-info">
-                <div><span class="title-top">Tahun Ajaran 2024/2025</span> &bull; Semester Genap</div>
-                <div style="font-size: 10px; color: #64748B;">Senin, 24 Februari 2025</div>
-            </div>
-            
-            <div class="header-right">
-                <div class="header-search">
-                    <i data-lucide="search"></i>
-                    <input type="text" placeholder="Cari data nilai, siswa, kelas...">
-                </div>
-                <div class="header-icon-btn" title="Notifikasi">
-                    <i data-lucide="bell" style="width: 14px; height: 14px;"></i>
-                </div>
-                <div class="profile-box">
-                    <div style="line-height: 1.2;">
-                        <div style="font-weight: 700; font-size: 11.5px;">Admin Sekolah</div>
-                        <div style="font-size: 10px; color: var(--text-muted);">Super Admin</div>
-                    </div>
-                    <div class="admin-avatar-sm" style="background: var(--light-blue); color: var(--primary-blue); font-weight: 700;">AS</div>
-                </div>
-            </div>
-        </header>
-
-        <!-- 3. MAIN CONTENT -->
+        <!-- CONTENT BODY -->
         <div class="content-body">
             <!-- PAGE HEADER -->
-            <div class="breadcrumb-text">Data Raport &bull; T.A. 2024/2025</div>
-            <h1 class="page-title">Data Raport</h1>
-            <div class="page-subtitle">Manajemen dan rekapitulasi nilai akademik raport siswa</div>
+            <div class="page-header">
+                <h1 class="page-title">Data Raport</h1>
+                <p class="page-subtitle">Manajemen dan rekapitulasi nilai akademik raport siswa</p>
+            </div>
 
-            <!-- 4. FILTER DATA -->
-            <div class="card card-custom p-3 mb-4">
+            <!-- FILTER DATA -->
+            <div class="filter-card">
                 <div class="filter-header">
                     <i data-lucide="filter" style="width: 13px; height: 13px;"></i> FILTER NILAI
                 </div>
@@ -617,11 +319,10 @@ $total_siswa = count($reports);
             </div>
         </div>
 
-        <!-- 6. FOOTER -->
-        <footer class="footer-admin">
-            <div>&copy; 2025 JosLearn. Hak Cipta Dilindungi.</div>
-            <div>Absensi & Nilai Raport Real Time</div>
-        </footer>
+    <!-- FOOTER -->
+    <div class="admin-footer">
+        <span>© 2025 JosLearn. Hak Cipta Dilindungi.</span>
+        <span>Absensi & Nilai Raport Real Time</span>
     </div>
 </div>
 
