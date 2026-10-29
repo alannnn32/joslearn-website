@@ -1,46 +1,38 @@
 <?php
 session_start();
+require_once __DIR__ . '/../../config/koneksi.php';
 
-$data_siswa = [
-    [
-        'no' => 1,
-        'nama' => 'Andi Pratama',
-        'inisial' => 'AP',
-        'nisn' => '1234567890',
-        'kelas' => 'X IPA 1'
-    ],
-    [
-        'no' => 2,
-        'nama' => 'Siti Aisyah',
-        'inisial' => 'SA',
-        'nisn' => '1234567891',
-        'kelas' => 'X IPA 1'
-    ],
-    [
-        'no' => 3,
-        'nama' => 'Budi Santoso',
-        'inisial' => 'BS',
-        'nisn' => '1234567892',
-        'kelas' => 'X IPA 2'
-    ]
-];
+$search       = trim($_GET['search'] ?? '');
+$kelas_filter = trim($_GET['kelas'] ?? '');
 
-$search = isset($_GET['search']) ? trim($_GET['search']) : '';
-$kelas_filter = isset($_GET['kelas']) ? trim($_GET['kelas']) : '';
-
-if (!empty($search)) {
-    $data_siswa = array_filter($data_siswa, function($siswa) use ($search) {
-        return stripos($siswa['nama'], $search) !== false || stripos($siswa['nisn'], $search) !== false;
-    });
+$where = []; $params = [];
+if ($search !== '') {
+    $where[] = '(nama LIKE ? OR nis LIKE ?)';
+    $params[] = "%$search%"; $params[] = "%$search%";
 }
-
-if (!empty($kelas_filter)) {
-    $data_siswa = array_filter($data_siswa, function($siswa) use ($kelas_filter) {
-        return $siswa['kelas'] === $kelas_filter;
-    });
+if ($kelas_filter !== '') {
+    $where[] = 'kelas = ?';
+    $params[] = $kelas_filter;
 }
+$sql = 'SELECT id, nis, nama, kelas FROM siswa'
+     . ($where ? ' WHERE ' . implode(' AND ', $where) : '') . ' ORDER BY nama';
+$stmt = $pdo->prepare($sql);
+$stmt->execute($params);
 
-$total_siswa = count($data_siswa);
+$data_siswa = [];
+$no = 1;
+foreach ($stmt as $r) {
+    $kata = preg_split('/\s+/', trim($r['nama']));
+    $r['no']      = $no++;
+    $r['nisn']    = $r['nis'];
+    $r['inisial'] = strtoupper(mb_substr($kata[0], 0, 1) . (isset($kata[1]) ? mb_substr($kata[1], 0, 1) : ''));
+    $data_siswa[] = $r;
+}
+$total_siswa  = count($data_siswa);
+$daftar_kelas = $pdo->query('SELECT DISTINCT kelas FROM siswa ORDER BY kelas')->fetchAll(PDO::FETCH_COLUMN);
+
+$pesan = $_SESSION['pesan'] ?? null;
+unset($_SESSION['pesan']);
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -582,6 +574,10 @@ $total_siswa = count($data_siswa);
             color: #64748b;
         }
 
+        .alert-message { padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 20px; background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+        .action-icons form { display: flex; margin: 0; }
+        button.action-btn { background: none; border: none; padding: 0; cursor: pointer; display: inline-flex; }
+
         @media (max-width: 900px) {
             .sidebar { display: none; }
             .page-header-container { flex-direction: column; gap: 16px; }
@@ -717,6 +713,10 @@ $total_siswa = count($data_siswa);
                 </div>
             </div>
 
+            <?php if ($pesan): ?>
+                <div class="alert-message"><?php echo htmlspecialchars($pesan); ?></div>
+            <?php endif; ?>
+
             <div class="card-table">
                 <div class="table-toolbar">
                     <div class="toolbar-filters">
@@ -727,8 +727,9 @@ $total_siswa = count($data_siswa);
                             </div>
                             <select class="dropdown-filter" name="kelas" onchange="this.form.submit()">
                                 <option value="">Semua Kelas</option>
-                                <option value="X IPA 1" <?php echo $kelas_filter === 'X IPA 1' ? 'selected' : ''; ?>>X IPA 1</option>
-                                <option value="X IPA 2" <?php echo $kelas_filter === 'X IPA 2' ? 'selected' : ''; ?>>X IPA 2</option>
+                                <?php foreach ($daftar_kelas as $nk): ?>
+                                    <option value="<?php echo htmlspecialchars($nk); ?>" <?php echo $kelas_filter === $nk ? 'selected' : ''; ?>><?php echo htmlspecialchars($nk); ?></option>
+                                <?php endforeach; ?>
                             </select>
                         </form>
                     </div>
@@ -762,12 +763,18 @@ $total_siswa = count($data_siswa);
                                 <td><span class="badge-kelas"><?php echo htmlspecialchars($row['kelas']); ?></span></td>
                                 <td>
                                     <div class="action-icons">
-                                        <a href="../students/detail_profil_siswa.php?edit=<?php echo $row['no']; ?>" class="action-btn" title="Edit">
+                                        <a href="../students/detail_profil_siswa.php?nis=<?php echo urlencode($row['nis']); ?>" class="action-btn" title="Lihat Detail">
+                                            <i data-lucide="eye" style="width: 16px;"></i>
+                                        </a>
+                                        <a href="../students/edit_siswa.php?nis=<?php echo urlencode($row['nis']); ?>" class="action-btn" title="Edit">
                                             <i data-lucide="square-pen" style="width: 16px;"></i>
                                         </a>
-                                        <a href="#" class="action-btn delete" title="Hapus" onclick="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
-                                            <i data-lucide="trash-2" style="width: 16px;"></i>
-                                        </a>
+                                        <form method="POST" action="../students/hapus_siswa.php" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
+                                            <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>">
+                                            <button type="submit" class="action-btn delete" title="Hapus">
+                                                <i data-lucide="trash-2" style="width: 16px;"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>

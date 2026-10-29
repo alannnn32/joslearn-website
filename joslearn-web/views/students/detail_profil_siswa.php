@@ -1,74 +1,44 @@
 <?php
 session_start();
+require_once __DIR__ . '/../../config/koneksi.php';
 
-// 1. Contoh Koneksi Database (sesuaikan dengan koneksi database kamu)
-// $conn = mysqli_connect("localhost", "root", "", "db_sekolah");
+$nis = trim($_GET['nis'] ?? '');
 
-$nis = $_GET['nis'] ?? '';
-
-/* 
-====================================================================
-JIKA SUDAH PAKAI DATABASE MYSQL (Aktifkan bagian ini):
-====================================================================
-$query = mysqli_query($conn, "SELECT * FROM siswa WHERE nis = '$nis'");
-$siswa = mysqli_fetch_assoc($query);
-
-if (!$siswa) {
-    echo "Data siswa tidak ditemukan.";
+$stmt = $pdo->prepare('SELECT * FROM siswa WHERE nis = ?');
+$stmt->execute([$nis]);
+$row = $stmt->fetch();
+if (!$row) {
+    $_SESSION['pesan'] = 'Data siswa tidak ditemukan.';
+    header('Location: ../teacher/data_siswa.php');
     exit;
 }
-*/
 
-// ====================================================================
-// SIMULASI DATA (Jika belum terhubung ke Database MySQL)
-// ====================================================================
-$data_semua_siswa = [
-    '10231' => [
-        'nama' => 'Budi Santoso',
-        'nis' => '10231',
-        'kelas' => 'XII IPA 1',
-        'status_akun' => $_SESSION['status_siswa_10231'] ?? 'Aktif',
-        'email' => 'budi@sekolah.sch.id',
-        'wali_kelas' => 'Rina Wulandari, M.Pd.',
-        'kehadiran_persen' => '92%',
-        'hadir' => 23,
-        'izin' => 2,
-        'sakit' => 1,
-        'status_rapor' => 'Semester 1 — Diterbitkan'
-    ],
-    '10232' => [
-        'nama' => 'Andi Pratama',
-        'nis' => '10232',
-        'kelas' => 'XII IPA 2',
-        'status_akun' => $_SESSION['status_siswa_10232'] ?? 'Aktif',
-        'email' => 'andi@sekolah.sch.id',
-        'wali_kelas' => 'Bambang Hidayat, S.Pd.',
-        'kehadiran_persen' => '95%',
-        'hadir' => 24,
-        'izin' => 1,
-        'sakit' => 0,
-        'status_rapor' => 'Semester 1 — Diterbitkan'
-    ]
+$siswa = [
+    'id'               => $row['id'],
+    'nama'             => $row['nama'],
+    'nis'              => $row['nis'],
+    'kelas'            => $row['kelas'],
+    'status_akun'      => $row['status_akun'],
+    'email'            => $row['email'] ?: '-',
+    'wali_kelas'       => $row['wali_kelas'] ?: '-',
+    // Belum ada tabel absensi & rapor, jadi sementara tampil kosong
+    'kehadiran_persen' => '-',
+    'hadir'            => 0,
+    'izin'             => 0,
+    'sakit'            => 0,
+    'status_rapor'     => '-',
 ];
 
-// Ambil data siswa sesuai NIS, jika tidak ada tampilkan default Budi Santoso
-$siswa = $data_semua_siswa[$nis] ?? $data_semua_siswa['10231'];
+// Inisial nama untuk avatar
+$words   = explode(' ', trim($siswa['nama']));
+$inisial = strtoupper(mb_substr($words[0], 0, 1) . (isset($words[1]) ? mb_substr($words[1], 0, 1) : ''));
 
-// Membuat Inisial Nama untuk Avatar (Contoh: "Andi Pratama" -> "AP")
-$words = explode(" ", $siswa['nama']);
-$inisial = strtoupper(substr($words[0], 0, 1) . (isset($words[1]) ? substr($words[1], 0, 1) : ''));
+$success_message = '';
 
-$success_message = "";
-
-// Proses ketika tombol Nonaktifkan di dalam modal diklik
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'nonaktifkan') {
-    // Jika menggunakan database:
-    // mysqli_query($conn, "UPDATE siswa SET status_akun = 'Nonaktif' WHERE nis = '{$_POST['nis']}'");
-
-    // Mengubah status akun di tampilan & session
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'nonaktifkan') {
+    $pdo->prepare("UPDATE siswa SET status_akun = 'Nonaktif' WHERE id = ?")->execute([$siswa['id']]);
     $siswa['status_akun'] = 'Nonaktif';
-    $_SESSION['status_siswa_' . $siswa['nis']] = 'Nonaktif';
-    $success_message = "Akun siswa berhasil dinonaktifkan.";
+    $success_message = 'Akun siswa berhasil dinonaktifkan.';
 }
 ?>
 <!DOCTYPE html>

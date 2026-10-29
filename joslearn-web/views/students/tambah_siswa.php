@@ -1,53 +1,54 @@
 <?php
 session_start();
+require_once __DIR__ . '/../../config/koneksi.php';
 
 $message = '';
 $message_type = '';
+$daftar_kelas = ['X IPA 1', 'X IPA 2', 'XII IPA 1', 'XII IPA 2', 'XII IPS 1'];
 
-// Inisialisasi variabel formulir
-$nama_lengkap  = '';
-$nis_nisn      = '';
-$jenis_kelamin = '';
-$kelas         = '';
-$email         = '';
-$status_akun   = 'Aktif'; // Default status aktif jika diinginkan
+$nama_lengkap = $nis_nisn = $jenis_kelamin = $kelas = $email = '';
+$status_akun = 'Aktif';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nama_lengkap  = isset($_POST['nama_lengkap']) ? trim($_POST['nama_lengkap']) : '';
-    $nis_nisn      = isset($_POST['nis_nisn']) ? trim($_POST['nis_nisn']) : '';
-    $jenis_kelamin = isset($_POST['jenis_kelamin']) ? trim($_POST['jenis_kelamin']) : '';
-    $kelas         = isset($_POST['kelas']) ? trim($_POST['kelas']) : '';
-    $email         = isset($_POST['email']) ? trim($_POST['email']) : '';
-    $status_akun   = isset($_POST['status_akun']) ? trim($_POST['status_akun']) : 'Aktif';
+    $nama_lengkap = trim($_POST['nama_lengkap'] ?? '');
+    $nis_nisn = trim($_POST['nis_nisn'] ?? '');
+    $jenis_kelamin = trim($_POST['jenis_kelamin'] ?? '');
+    $kelas = trim($_POST['kelas'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $status_akun = trim($_POST['status_akun'] ?? 'Aktif');
 
-    // Validasi sederhana
-    if (empty($nama_lengkap) || empty($nis_nisn)) {
+    if ($nama_lengkap === '' || $nis_nisn === '') {
         $message = 'Nama Lengkap dan NIS/NISN wajib diisi!';
         $message_type = 'error';
+    } elseif (!in_array($jenis_kelamin, ['Laki-laki', 'Perempuan'], true) || !in_array($kelas, $daftar_kelas, true)) {
+        $message = 'Jenis kelamin atau kelas tidak valid.';
+        $message_type = 'error';
+    } elseif ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $message = 'Format email tidak valid.';
+        $message_type = 'error';
     } else {
-        /*
-            ------------------------------------------------------------------
-            Proses Simpan ke Database
-            ------------------------------------------------------------------
-            $stmt = $pdo->prepare("INSERT INTO siswa (nama, nis, jenis_kelamin, kelas, email, status) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->execute([$nama_lengkap, $nis_nisn, $jenis_kelamin, $kelas, $email, $status_akun]);
-            ------------------------------------------------------------------
-        */
-        $message = 'Data siswa berhasil disimpan!';
-        $message_type = 'success';
+        if (!in_array($status_akun, ['Aktif', 'Nonaktif'], true)) {
+            $status_akun = 'Aktif';
+        }
+        $email_db = $email !== '' ? $email : null;
+        try {
+            $stmt = $pdo->prepare('INSERT INTO siswa (nis, nama, jenis_kelamin, kelas, email, status_akun) VALUES (?, ?, ?, ?, ?, ?)');
+            $stmt->execute([$nis_nisn, $nama_lengkap, $jenis_kelamin, $kelas, $email_db, $status_akun]);
 
-        // Reset form setelah berhasil disimpan
-        $nama_lengkap = '';
-        $nis_nisn = '';
-        $jenis_kelamin = '';
-        $kelas = '';
-        $email = '';
-        $status_akun = 'Aktif';
+            // ARAHKAN KE FOLDER TEACHER LALU KE DATA_SISWA.PHP
+            header("Location: ../teacher/data_siswa.php");
+            exit();
+
+        } catch (PDOException $e) {
+            $message = ($e->getCode() === '23000') ? 'NIS/NISN sudah terdaftar.' : 'Gagal menyimpan data.';
+            $message_type = 'error';
+        }
     }
 }
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -248,7 +249,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-color: #cbd5e1;
         }
 
-        .search-box svg, .search-box i {
+        .search-box svg,
+        .search-box i {
             position: absolute;
             left: 12px;
             color: #94a3b8;
@@ -359,7 +361,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 24px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
         }
 
         .form-grid {
@@ -440,11 +442,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-size: 13px;
             margin-bottom: 20px;
         }
+
         .alert-message.error {
             background-color: #fef2f2;
             color: #991b1b;
             border: 1px solid #fecaca;
         }
+
         .alert-message.success {
             background-color: #f0fdf4;
             color: #166534;
@@ -463,11 +467,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         @media (max-width: 900px) {
-            .sidebar { display: none; }
-            .form-grid { grid-template-columns: 1fr; }
+            .sidebar {
+                display: none;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <aside class="sidebar">
@@ -595,22 +605,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <div class="card-form">
                 <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="POST">
-                    
+
                     <div class="form-grid">
                         <div class="form-group">
                             <label for="nama_lengkap">Nama Lengkap</label>
-                            <input type="text" id="nama_lengkap" name="nama_lengkap" placeholder="Contoh: Budi Santoso" value="<?php echo htmlspecialchars($nama_lengkap); ?>" required>
+                            <input type="text" id="nama_lengkap" name="nama_lengkap" placeholder="Contoh: Budi Santoso"
+                                value="<?php echo htmlspecialchars($nama_lengkap); ?>" required>
                         </div>
 
                         <div class="form-group">
                             <label for="nis_nisn">NIS/NISN</label>
-                            <input type="text" id="nis_nisn" name="nis_nisn" placeholder="Contoh: 10231" value="<?php echo htmlspecialchars($nis_nisn); ?>" required>
+                            <input type="text" id="nis_nisn" name="nis_nisn" placeholder="Contoh: 10231"
+                                value="<?php echo htmlspecialchars($nis_nisn); ?>" required>
                         </div>
 
                         <div class="form-group">
                             <label for="jenis_kelamin">Jenis Kelamin</label>
                             <select id="jenis_kelamin" name="jenis_kelamin" required>
-                                <option value="" disabled <?php echo empty($jenis_kelamin) ? 'selected' : ''; ?>>-- Pilih Jenis Kelamin --</option>
+                                <option value="" disabled <?php echo empty($jenis_kelamin) ? 'selected' : ''; ?>>--
+                                    Pilih Jenis Kelamin --</option>
                                 <option value="Laki-laki" <?php echo ($jenis_kelamin === 'Laki-laki') ? 'selected' : ''; ?>>Laki-laki</option>
                                 <option value="Perempuan" <?php echo ($jenis_kelamin === 'Perempuan') ? 'selected' : ''; ?>>Perempuan</option>
                             </select>
@@ -619,23 +632,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <div class="form-group">
                             <label for="kelas">Kelas</label>
                             <select id="kelas" name="kelas" required>
-                                <option value="" disabled <?php echo empty($kelas) ? 'selected' : ''; ?>>-- Pilih Kelas --</option>
-                                <option value="XII IPA 1" <?php echo ($kelas === 'XII IPA 1') ? 'selected' : ''; ?>>XII IPA 1</option>
-                                <option value="XII IPA 2" <?php echo ($kelas === 'XII IPA 2') ? 'selected' : ''; ?>>XII IPA 2</option>
-                                <option value="XII IPS 1" <?php echo ($kelas === 'XII IPS 1') ? 'selected' : ''; ?>>XII IPS 1</option>
+                                <option value="" disabled <?php echo $kelas === '' ? 'selected' : ''; ?>>-- Pilih Kelas --
+                                </option>
+                                <?php foreach ($daftar_kelas as $k): ?>
+                                    <option value="<?php echo htmlspecialchars($k); ?>" <?php echo ($kelas === $k) ? 'selected' : ''; ?>><?php echo htmlspecialchars($k); ?></option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label for="email">Email</label>
-                            <input type="email" id="email" name="email" placeholder="Contoh: budi@sekolah.sch.id" value="<?php echo htmlspecialchars($email); ?>">
+                            <input type="email" id="email" name="email" placeholder="Contoh: budi@sekolah.sch.id"
+                                value="<?php echo htmlspecialchars($email); ?>">
                         </div>
 
                         <div class="form-group">
                             <label for="status_akun">Status Akun</label>
                             <select id="status_akun" name="status_akun">
-                                <option value="Aktif" <?php echo ($status_akun === 'Aktif') ? 'selected' : ''; ?>>Aktif</option>
-                                <option value="Tidak Aktif" <?php echo ($status_akun === 'Tidak Aktif') ? 'selected' : ''; ?>>Tidak Aktif</option>
+                                <option value="Aktif" <?php echo ($status_akun === 'Aktif') ? 'selected' : ''; ?>>Aktif
+                                </option>
+                                <option value="Nonaktif" <?php echo ($status_akun === 'Nonaktif') ? 'selected' : ''; ?>>
+                                    Nonaktif</option>
                             </select>
                         </div>
                     </div>
@@ -662,4 +679,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         lucide.createIcons();
     </script>
 </body>
+
 </html>

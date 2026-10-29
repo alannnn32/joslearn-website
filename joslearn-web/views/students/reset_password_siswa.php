@@ -1,21 +1,32 @@
 <?php
 session_start();
+require_once __DIR__ . '/../../config/koneksi.php';
 
-$id_siswa = isset($_GET['id']) ? $_GET['id'] : '';
-$nama_siswa = "Budi Santoso";
+$nis = trim($_GET['nis'] ?? '');
+
+$stmt = $pdo->prepare('SELECT id, nama FROM siswa WHERE nis = ?');
+$stmt->execute([$nis]);
+$siswa = $stmt->fetch();
+if (!$siswa) {
+    $_SESSION['pesan'] = 'Data siswa tidak ditemukan.';
+    header('Location: ../teacher/data_siswa.php');
+    exit;
+}
+$nama_siswa = $siswa['nama'];
 
 $message = '';
 $message_type = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $password_baru = isset($_POST['password_baru']) ? $_POST['password_baru'] : '';
+    $password_baru = $_POST['password_baru'] ?? '';
 
-    if (empty($password_baru)) {
+    if ($password_baru === '') {
         $message = 'Password baru wajib diisi!';
         $message_type = 'error';
     } else {
         $hashed_password = password_hash($password_baru, PASSWORD_DEFAULT);
-        
+        $pdo->prepare('UPDATE siswa SET password_hash = ? WHERE id = ?')->execute([$hashed_password, $siswa['id']]);
+
         $message = 'Password berhasil direset!';
         $message_type = 'success';
     }
@@ -549,7 +560,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 <?php endif; ?>
 
-                <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) . '?id=' . htmlspecialchars($id_siswa); ?>" method="POST">
+                <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']) . '?nis=' . urlencode($nis); ?>" method="POST">
                     
                     <div class="form-reset-group">
                         <label for="password_baru">Password Baru</label>
@@ -557,7 +568,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
 
                     <div class="reset-actions">
-                        <a href="detail_profil_siswa.php?id=<?php echo urlencode($id_siswa); ?>" class="btn-reset btn-reset-cancel" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Batal</a>
+                        <a href="detail_profil_siswa.php?nis=<?php echo urlencode($nis); ?>" class="btn-reset btn-reset-cancel" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">Batal</a>
                         <button type="submit" class="btn-reset btn-reset-submit">Reset Password</button>
                     </div>
 
