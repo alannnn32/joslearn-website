@@ -240,8 +240,7 @@ $username = $_SESSION['username'] ?? '';
                 <?php endif; ?>
             </ul>
         </div>
-
-        <a href="views/auth/login.php?logout=true" class="logout-btn" onclick="<?php session_destroy(); ?>">
+        <a href="logout.php" class="logout-btn">
             <i data-lucide="log-out" style="width: 18px;"></i> Keluar
         </a>
     </div>

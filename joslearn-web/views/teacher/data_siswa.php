@@ -1,21 +1,27 @@
 <?php
 session_start();
+$activeMenu = 'data_siswa'; 
 require_once __DIR__ . '/../../config/koneksi.php';
+// ... sisa kode Anda ...
+// Tentukan menu aktif agar sidebar mengenali halaman ini
+$activeMenu = 'data_siswa';
 
-$search       = trim($_GET['search'] ?? '');
+$search = trim($_GET['search'] ?? '');
 $kelas_filter = trim($_GET['kelas'] ?? '');
 
-$where = []; $params = [];
+$where = [];
+$params = [];
 if ($search !== '') {
     $where[] = '(nama LIKE ? OR nis LIKE ?)';
-    $params[] = "%$search%"; $params[] = "%$search%";
+    $params[] = "%$search%";
+    $params[] = "%$search%";
 }
 if ($kelas_filter !== '') {
     $where[] = 'kelas = ?';
     $params[] = $kelas_filter;
 }
 $sql = 'SELECT id, nis, nama, kelas FROM siswa'
-     . ($where ? ' WHERE ' . implode(' AND ', $where) : '') . ' ORDER BY nama';
+    . ($where ? ' WHERE ' . implode(' AND ', $where) : '') . ' ORDER BY nama';
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 
@@ -23,12 +29,12 @@ $data_siswa = [];
 $no = 1;
 foreach ($stmt as $r) {
     $kata = preg_split('/\s+/', trim($r['nama']));
-    $r['no']      = $no++;
-    $r['nisn']    = $r['nis'];
+    $r['no'] = $no++;
+    $r['nisn'] = $r['nis'];
     $r['inisial'] = strtoupper(mb_substr($kata[0], 0, 1) . (isset($kata[1]) ? mb_substr($kata[1], 0, 1) : ''));
     $data_siswa[] = $r;
 }
-$total_siswa  = count($data_siswa);
+$total_siswa = count($data_siswa);
 $daftar_kelas = $pdo->query('SELECT DISTINCT kelas FROM siswa ORDER BY kelas')->fetchAll(PDO::FETCH_COLUMN);
 
 $pesan = $_SESSION['pesan'] ?? null;
@@ -36,14 +42,17 @@ unset($_SESSION['pesan']);
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Siswa - JosLearn</title>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons (diperlukan oleh sidebar_admin.php) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
@@ -61,7 +70,8 @@ unset($_SESSION['pesan']);
             min-height: 100vh;
         }
 
-        .sidebar {
+        /* Styling tambahan untuk menyesuaikan kelas sidebar_admin.php */
+        .jl-sidebar {
             width: 250px;
             background-color: #0c56d0;
             color: #ffffff;
@@ -72,14 +82,14 @@ unset($_SESSION['pesan']);
             flex-shrink: 0;
         }
 
-        .brand {
+        .jl-brand {
             display: flex;
             align-items: center;
             gap: 12px;
             padding: 0 12px 24px 12px;
         }
 
-        .brand-logo {
+        .jl-brand .logo {
             width: 36px;
             height: 36px;
             background-color: #ffffff;
@@ -88,21 +98,15 @@ unset($_SESSION['pesan']);
             align-items: center;
             justify-content: center;
             color: #0c56d0;
-            font-weight: 700;
-            font-size: 20px;
         }
 
-        .brand-title {
+        .jl-brand .name {
             font-size: 20px;
             font-weight: 700;
             letter-spacing: -0.5px;
         }
 
-        .menu-section {
-            margin-bottom: 20px;
-        }
-
-        .menu-category {
+        .jl-nav-title {
             font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
@@ -111,14 +115,14 @@ unset($_SESSION['pesan']);
             padding: 0 12px 8px 12px;
         }
 
-        .menu-list {
+        .jl-nav {
             list-style: none;
             display: flex;
             flex-direction: column;
             gap: 4px;
         }
 
-        .menu-item a {
+        .jl-nav a {
             display: flex;
             align-items: center;
             gap: 12px;
@@ -131,49 +135,16 @@ unset($_SESSION['pesan']);
             transition: all 0.2s ease;
         }
 
-        .menu-item a:hover {
+        .jl-nav a:hover {
             background-color: rgba(255, 255, 255, 0.1);
             color: #ffffff;
         }
 
-        .menu-item.active a {
+        .jl-nav a.active {
             background-color: #ffffff;
             color: #0c56d0;
             font-weight: 600;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        .sidebar-user {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 16px 12px;
-            border-top: 1px solid rgba(255, 255, 255, 0.15);
-            margin-top: auto;
-        }
-
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            background-color: #ffffff;
-            color: #0c56d0;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 13px;
-        }
-
-        .user-info .user-name {
-            font-size: 13px;
-            font-weight: 600;
-            color: #ffffff;
-        }
-
-        .user-info .user-role {
-            font-size: 11px;
-            color: #93c5fd;
         }
 
         .main-wrapper {
@@ -235,7 +206,7 @@ unset($_SESSION['pesan']);
             border-color: #cbd5e1;
         }
 
-        .search-box-top svg, .search-box-top i {
+        .search-box-top i {
             position: absolute;
             left: 12px;
             color: #94a3b8;
@@ -390,7 +361,7 @@ unset($_SESSION['pesan']);
             background-color: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
             overflow: hidden;
         }
 
@@ -424,7 +395,7 @@ unset($_SESSION['pesan']);
             outline: none;
         }
 
-        .search-box-table svg, .search-box-table i {
+        .search-box-table i {
             position: absolute;
             left: 12px;
             color: #94a3b8;
@@ -574,97 +545,49 @@ unset($_SESSION['pesan']);
             color: #64748b;
         }
 
-        .alert-message { padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 20px; background-color: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
-        .action-icons form { display: flex; margin: 0; }
-        button.action-btn { background: none; border: none; padding: 0; cursor: pointer; display: inline-flex; }
+        .alert-message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            background-color: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .action-icons form {
+            display: flex;
+            margin: 0;
+        }
+
+        button.action-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            display: inline-flex;
+        }
 
         @media (max-width: 900px) {
-            .sidebar { display: none; }
-            .page-header-container { flex-direction: column; gap: 16px; }
+            .jl-sidebar {
+                display: none;
+            }
+
+            .page-header-container {
+                flex-direction: column;
+                gap: 16px;
+            }
         }
     </style>
 </head>
+
 <body>
 
-    <aside class="sidebar">
-        <div>
-            <div class="brand">
-                <div class="brand-logo">J</div>
-                <div class="brand-title">JosLearn</div>
-            </div>
-
-            <div class="menu-section">
-                <div class="menu-category">Menu Utama</div>
-                <ul class="menu-list">
-                    <li class="menu-item">
-                        <a href="../admin/dashboard.php"><i data-lucide="layout-dashboard" style="width: 16px;"></i> Dashboard</a>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="menu-section">
-                <div class="menu-category">Data Master</div>
-                <ul class="menu-list">
-                    <li class="menu-item active">
-                        <a href="#"><i data-lucide="users" style="width: 16px;"></i> Data Siswa</a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="#"><i data-lucide="user-check" style="width: 16px;"></i> Data Guru</a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="#"><i data-lucide="clipboard-list" style="width: 16px;"></i> Penugasan</a>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="menu-section">
-                <div class="menu-category">Absensi</div>
-                <ul class="menu-list">
-                    <li class="menu-item">
-                        <a href="#"><i data-lucide="check-square" style="width: 16px;"></i> Pengajuan Izin</a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="#"><i data-lucide="file-text" style="width: 16px;"></i> Rekap Absensi</a>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="menu-section">
-                <div class="menu-category">Rapor</div>
-                <ul class="menu-list">
-                    <li class="menu-item">
-                        <a href="#"><i data-lucide="file-badge" style="width: 16px;"></i> Verifikasi Rapor</a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="#"><i data-lucide="bar-chart-3" style="width: 16px;"></i> Data Rapor</a>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="menu-section">
-                <div class="menu-category">Sistem</div>
-                <ul class="menu-list">
-                    <li class="menu-item">
-                        <a href="#"><i data-lucide="history" style="width: 16px;"></i> Log Aktivitas</a>
-                    </li>
-                    <li class="menu-item">
-                        <a href="#"><i data-lucide="settings" style="width: 16px;"></i> Pengaturan</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        <div class="sidebar-user">
-            <div class="user-avatar">AD</div>
-            <div class="user-info">
-                <div class="user-name">Admin Sekolah</div>
-                <div class="user-role">Administrator</div>
-            </div>
-        </div>
-    </aside>
+    <!-- MEMANGGIL SIDEBAR MODULAR YANG BENAR -->
+    <?php include __DIR__ . '/../includes/sidebar_admin.php'; ?>
 
     <div class="main-wrapper">
-        
+
         <header class="top-header">
             <div class="header-meta">
                 <div class="academic-year">Tahun Ajaran 2024/2025 • Semester Genap</div>
@@ -693,7 +616,7 @@ unset($_SESSION['pesan']);
         </header>
 
         <main class="content-body">
-            
+
             <div class="breadcrumb">
                 <span>Data Induk</span>
                 <span class="separator">•</span>
@@ -723,7 +646,8 @@ unset($_SESSION['pesan']);
                         <form method="GET" style="display:flex; gap:12px;">
                             <div class="search-box-table">
                                 <i data-lucide="search" style="width: 16px;"></i>
-                                <input type="text" name="search" placeholder="Cari nama/NISN..." value="<?php echo htmlspecialchars($search); ?>">
+                                <input type="text" name="search" placeholder="Cari nama/NISN..."
+                                    value="<?php echo htmlspecialchars($search); ?>">
                             </div>
                             <select class="dropdown-filter" name="kelas" onchange="this.form.submit()">
                                 <option value="">Semua Kelas</option>
@@ -749,35 +673,38 @@ unset($_SESSION['pesan']);
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if(!empty($data_siswa)): ?>
-                            <?php foreach($data_siswa as $row): ?>
-                            <tr>
-                                <td><?php echo $row['no']; ?></td>
-                                <td>
-                                    <div class="student-cell">
-                                        <div class="student-avatar"><?php echo $row['inisial']; ?></div>
-                                        <span><?php echo htmlspecialchars($row['nama']); ?></span>
-                                    </div>
-                                </td>
-                                <td><?php echo htmlspecialchars($row['nisn']); ?></td>
-                                <td><span class="badge-kelas"><?php echo htmlspecialchars($row['kelas']); ?></span></td>
-                                <td>
-                                    <div class="action-icons">
-                                        <a href="../students/detail_profil_siswa.php?nis=<?php echo urlencode($row['nis']); ?>" class="action-btn" title="Lihat Detail">
-                                            <i data-lucide="eye" style="width: 16px;"></i>
-                                        </a>
-                                        <a href="../students/edit_siswa.php?nis=<?php echo urlencode($row['nis']); ?>" class="action-btn" title="Edit">
-                                            <i data-lucide="square-pen" style="width: 16px;"></i>
-                                        </a>
-                                        <form method="POST" action="../students/hapus_siswa.php" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
-                                            <input type="hidden" name="id" value="<?php echo (int)$row['id']; ?>">
-                                            <button type="submit" class="action-btn delete" title="Hapus">
-                                                <i data-lucide="trash-2" style="width: 16px;"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
+                        <?php if (!empty($data_siswa)): ?>
+                            <?php foreach ($data_siswa as $row): ?>
+                                <tr>
+                                    <td><?php echo $row['no']; ?></td>
+                                    <td>
+                                        <div class="student-cell">
+                                            <div class="student-avatar"><?php echo $row['inisial']; ?></div>
+                                            <span><?php echo htmlspecialchars($row['nama']); ?></span>
+                                        </div>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($row['nisn']); ?></td>
+                                    <td><span class="badge-kelas"><?php echo htmlspecialchars($row['kelas']); ?></span></td>
+                                    <td>
+                                        <div class="action-icons">
+                                            <a href="../students/detail_profil_siswa.php?nis=<?php echo urlencode($row['nis']); ?>"
+                                                class="action-btn" title="Lihat Detail">
+                                                <i data-lucide="eye" style="width: 16px;"></i>
+                                            </a>
+                                            <a href="../students/edit_siswa.php?nis=<?php echo urlencode($row['nis']); ?>"
+                                                class="action-btn" title="Edit">
+                                                <i data-lucide="square-pen" style="width: 16px;"></i>
+                                            </a>
+                                            <form method="POST" action="../students/hapus_siswa.php"
+                                                onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?')">
+                                                <input type="hidden" name="id" value="<?php echo (int) $row['id']; ?>">
+                                                <button type="submit" class="action-btn delete" title="Hapus">
+                                                    <i data-lucide="trash-2" style="width: 16px;"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
@@ -812,4 +739,5 @@ unset($_SESSION['pesan']);
         lucide.createIcons();
     </script>
 </body>
+
 </html>
